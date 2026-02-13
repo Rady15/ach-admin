@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Change this to change the API base URL
-const BASE_URL = import.meta.env.PROD ? 'https://ach.runasp.net' : '/api';
+const BASE_URL = import.meta.env.PROD ? 'https://ach.runasp.net/api' : '/api';
 
 const api = axios.create({
     baseURL: BASE_URL,
