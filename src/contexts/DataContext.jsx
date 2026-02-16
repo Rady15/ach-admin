@@ -48,15 +48,18 @@ export function DataProvider({ children }) {
             ]);
 
             if (usersRes.status === 'fulfilled') {
-                const allUsers = usersRes.value.data;
+                // Handle different response structures (array or wrapped in data property)
+                const responseData = usersRes.value.data;
+                const allUsers = Array.isArray(responseData) ? responseData : (responseData.data || responseData.users || responseData.staff || []);
+                
+                console.log('AllStaff API Response:', responseData);
+                console.log('Processed users array:', allUsers);
 
                 // Define what constitutes an employee/staff role
-                const employeeRoles = ['staff', 'employee', 'manager', 'admin'];
+                const employeeRoles = ['staff', 'employee', 'manager', 'admin', 'Staff', 'Employee', 'Manager', 'Admin'];
 
-                const emps = allUsers.filter(u => {
-                    const role = (u.role || u.userRole || (u.roles && u.roles[0]) || '').toLowerCase();
-                    return employeeRoles.includes(role);
-                }).map(u => ({
+                // TEMP: Show all users as employees to debug
+                const emps = allUsers.map(u => ({
                     ...u,
                     id: u.userName || u.id,
                     userName: u.userName,
@@ -69,23 +72,12 @@ export function DataProvider({ children }) {
                     role: (u.role || u.userRole || (u.roles && u.roles[0]) || 'employee').toLowerCase()
                 }));
 
-                const custs = allUsers.filter(u => {
-                    const role = (u.role || u.userRole || (u.roles && u.roles[0]) || '').toLowerCase();
-                    // If no role is found, or it's not in the employee list, it's a customer
-                    return !role || !employeeRoles.includes(role);
-                }).map(u => ({
-                    id: u.userName,
-                    userName: u.userName,
-                    name: u.userName,
-                    email: u.email,
-                    phone: u.phoneNumber || '---',
-                    status: u.isActive ? 'active' : 'inactive',
-                    isActive: u.isActive,
-                    totalSpent: u.totalSpent || 0,
-                    orders: u.orders || 0,
-                    registeredDate: u.registeredDate || u.createdAt || new Date().toISOString().split('T')[0]
-                }));
+                // TEMP: No customers for now
+                const custs = [];
 
+                console.log('Filtered employees:', emps.length, emps);
+                console.log('Filtered customers:', custs.length, custs);
+                
                 setEmployees(emps);
                 setCustomers(custs);
             } else {

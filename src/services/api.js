@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Change this to change the API base URL
-const BASE_URL = import.meta.env.PROD ? 'https://ach.runasp.net' : '/api';
+const BASE_URL = import.meta.env.PROD ? 'https://ach.runasp.net/api' : '/api';
 
 const api = axios.create({
     baseURL: BASE_URL,
@@ -29,11 +29,17 @@ api.interceptors.request.use(
 
 export const authAPI = {
     login: (email, password) => api.post('/Account/login', { email, password }),
-    getAllUsers: () => api.get('/Account/all'),
+    getAllUsers: () => api.get('/Account/AllStaff'),
     suspendUser: (id) => api.put(`/Account/suspend/${id}`),
     unsuspendUser: (id) => api.put(`/Account/unsuspend/${id}`),
     getStats: () => api.get('/Account/stats'),
-    createEmployee: (employeeData) => api.post('/Account/create-employee', employeeData),
+    createEmployee: (employeeData) => api.post('/Account/create-employee', {
+        email: employeeData.email,
+        userName: employeeData.userName || employeeData.UserName,
+        password: employeeData.password,
+        role: employeeData.role === 'manager' ? 'Admin' : 'Staff',
+        phoneNumber: employeeData.phoneNumber
+    }),
 };
 
 export const servicesAPI = {
