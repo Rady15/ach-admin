@@ -9,11 +9,27 @@ const Dashboard = () => {
     const { t } = useLanguage();
     const { isDark } = useTheme();
     const navigate = useNavigate();
-    const { stats, orders, customers, services } = useData();
+    const { stats, orders } = useData();
 
     // Use recent 3 orders for display
     const recentOrders = orders.slice(0, 3);
-    const recentCustomers = customers.slice(0, 3); // Just taking first 3 for demo
+
+    // Calculate order status counts for the chart
+    const totalOrdersCount = orders.length;
+    const completedCount = orders.filter(o => o.status === 'completed').length;
+    const pendingCount = orders.filter(o => o.status === 'pending').length;
+    const processingCount = orders.filter(o => o.status === 'processing').length;
+    
+    // Calculate percentages for donut chart
+    const completedPercent = totalOrdersCount > 0 ? (completedCount / totalOrdersCount) * 100 : 0;
+    const pendingPercent = totalOrdersCount > 0 ? (pendingCount / totalOrdersCount) * 100 : 0;
+    const processingPercent = totalOrdersCount > 0 ? (processingCount / totalOrdersCount) * 100 : 0;
+    
+    // SVG circle calculations (circumference = 2 * π * 70 ≈ 440)
+    const circumference = 440;
+    const completedOffset = circumference - (completedPercent / 100) * circumference;
+    const pendingOffset = circumference - (pendingPercent / 100) * circumference;
+    const processingOffset = circumference - (processingPercent / 100) * circumference;
 
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-300">
@@ -86,9 +102,37 @@ const Dashboard = () => {
                             <p className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{t('recentOrders')}</p>
                         </div>
                     </div>
-                    {/* Simplified Chart Placeholder or Keep Static for now as dynamic SVGs are complex */}
-                    <div className="w-full h-[300px] relative z-10 flex items-center justify-center border border-dashed border-glass-border rounded-xl">
-                        <p className={isDark ? "text-slate-500" : "text-slate-400"}>Chart Visualization (Static Mock)</p>
+                    {/* Order Status Distribution Bar Chart */}
+                    <div className="w-full h-[300px] relative z-10 flex flex-col justify-end gap-4 px-4">
+                        <div className="flex items-end justify-around h-[250px] gap-4">
+                            {/* Completed Bar */}
+                            <div className="flex flex-col items-center gap-2 flex-1">
+                                <span className={`text-sm font-bold font-numbers ${isDark ? 'text-white' : 'text-slate-800'}`}>{completedCount}</span>
+                                <div 
+                                    className="w-full bg-success rounded-t-xl transition-all duration-500 shadow-[0_0_15px_rgba(16,185,129,0.4)]"
+                                    style={{ height: totalOrdersCount > 0 ? `${(completedCount / totalOrdersCount) * 200}px` : '0px', minHeight: completedCount > 0 ? '4px' : '0px' }}
+                                ></div>
+                                <span className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{t('completed')}</span>
+                            </div>
+                            {/* Pending Bar */}
+                            <div className="flex flex-col items-center gap-2 flex-1">
+                                <span className={`text-sm font-bold font-numbers ${isDark ? 'text-white' : 'text-slate-800'}`}>{pendingCount}</span>
+                                <div 
+                                    className="w-full bg-warning rounded-t-xl transition-all duration-500 shadow-[0_0_15px_rgba(245,158,11,0.4)]"
+                                    style={{ height: totalOrdersCount > 0 ? `${(pendingCount / totalOrdersCount) * 200}px` : '0px', minHeight: pendingCount > 0 ? '4px' : '0px' }}
+                                ></div>
+                                <span className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{t('pending')}</span>
+                            </div>
+                            {/* Processing Bar */}
+                            <div className="flex flex-col items-center gap-2 flex-1">
+                                <span className={`text-sm font-bold font-numbers ${isDark ? 'text-white' : 'text-slate-800'}`}>{processingCount}</span>
+                                <div 
+                                    className="w-full bg-info rounded-t-xl transition-all duration-500 shadow-[0_0_15px_rgba(59,130,246,0.4)]"
+                                    style={{ height: totalOrdersCount > 0 ? `${(processingCount / totalOrdersCount) * 200}px` : '0px', minHeight: processingCount > 0 ? '4px' : '0px' }}
+                                ></div>
+                                <span className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{t('processing')}</span>
+                            </div>
+                        </div>
                     </div>
                 </GlassPanel>
 
@@ -97,13 +141,50 @@ const Dashboard = () => {
                     <h3 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-slate-800'}`}>{t('status')}</h3>
                     <div className="flex-1 flex items-center justify-center relative">
                         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                            <span className={`text-3xl font-bold font-numbers ${isDark ? 'text-white' : 'text-slate-800'}`}>{stats.totalOrders}</span>
+                            <span className={`text-3xl font-bold font-numbers ${isDark ? 'text-white' : 'text-slate-800'}`}>{totalOrdersCount}</span>
                             <span className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{t('totalOrders')}</span>
                         </div>
-                        {/* Static Donut for visual consistency */}
+                        {/* Dynamic Donut Chart */}
                         <svg className="transform -rotate-90" height="180" viewBox="0 0 180 180" width="180">
                             <circle cx="90" cy="90" fill="none" r="70" stroke={isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"} strokeWidth="20"></circle>
-                            <circle className="drop-shadow-[0_0_10px_rgba(16,185,129,0.5)]" cx="90" cy="90" fill="none" r="70" stroke="#10b981" strokeDasharray="300 440" strokeLinecap="round" strokeWidth="20"></circle>
+                            {/* Completed Segment (Green) */}
+                            {completedCount > 0 && (
+                                <circle 
+                                    className="drop-shadow-[0_0_10px_rgba(16,185,129,0.5)] transition-all duration-500" 
+                                    cx="90" cy="90" fill="none" r="70" 
+                                    stroke="#10b981" 
+                                    strokeDasharray={circumference} 
+                                    strokeDashoffset={completedOffset}
+                                    strokeLinecap="round" 
+                                    strokeWidth="20"
+                                ></circle>
+                            )}
+                            {/* Pending Segment (Orange) */}
+                            {pendingCount > 0 && (
+                                <circle 
+                                    className="drop-shadow-[0_0_10px_rgba(245,158,11,0.5)] transition-all duration-500" 
+                                    cx="90" cy="90" fill="none" r="70" 
+                                    stroke="#f59e0b" 
+                                    strokeDasharray={circumference} 
+                                    strokeDashoffset={pendingOffset}
+                                    strokeLinecap="round" 
+                                    strokeWidth="20"
+                                    style={{ transform: `rotate(${(completedPercent / 100) * 360}deg)`, transformOrigin: '90px 90px' }}
+                                ></circle>
+                            )}
+                            {/* Processing Segment (Blue) */}
+                            {processingCount > 0 && (
+                                <circle 
+                                    className="drop-shadow-[0_0_10px_rgba(59,130,246,0.5)] transition-all duration-500" 
+                                    cx="90" cy="90" fill="none" r="70" 
+                                    stroke="#3b82f6" 
+                                    strokeDasharray={circumference} 
+                                    strokeDashoffset={processingOffset}
+                                    strokeLinecap="round" 
+                                    strokeWidth="20"
+                                    style={{ transform: `rotate(${((completedPercent + pendingPercent) / 100) * 360}deg)`, transformOrigin: '90px 90px' }}
+                                ></circle>
+                            )}
                         </svg>
                     </div>
                     <div className="flex flex-col gap-3">
@@ -113,21 +194,21 @@ const Dashboard = () => {
                                 <span className="size-3 rounded-full bg-success shadow-[0_0_8px_rgba(16,185,129,0.6)]"></span>
                                 <span className={`text-sm ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>{t('completed')}</span>
                             </div>
-                            <span className={`text-sm font-bold font-numbers ${isDark ? 'text-white' : 'text-slate-800'}`}>{orders.filter(o => o.status === 'completed').length}</span>
+                            <span className={`text-sm font-bold font-numbers ${isDark ? 'text-white' : 'text-slate-800'}`}>{completedCount}</span>
                         </div>
                         <div className={`flex items-center justify-between p-2 rounded-lg transition-colors ${isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50'}`}>
                             <div className="flex items-center gap-2">
                                 <span className="size-3 rounded-full bg-warning shadow-[0_0_8px_rgba(245,158,11,0.6)]"></span>
                                 <span className={`text-sm ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>{t('pending')}</span>
                             </div>
-                            <span className={`text-sm font-bold font-numbers ${isDark ? 'text-white' : 'text-slate-800'}`}>{orders.filter(o => o.status === 'pending').length}</span>
+                            <span className={`text-sm font-bold font-numbers ${isDark ? 'text-white' : 'text-slate-800'}`}>{pendingCount}</span>
                         </div>
                         <div className={`flex items-center justify-between p-2 rounded-lg transition-colors ${isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50'}`}>
                             <div className="flex items-center gap-2">
                                 <span className="size-3 rounded-full bg-info shadow-[0_0_8px_rgba(59,130,246,0.6)]"></span>
                                 <span className={`text-sm ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>{t('processing')}</span>
                             </div>
-                            <span className={`text-sm font-bold font-numbers ${isDark ? 'text-white' : 'text-slate-800'}`}>{orders.filter(o => o.status === 'processing').length}</span>
+                            <span className={`text-sm font-bold font-numbers ${isDark ? 'text-white' : 'text-slate-800'}`}>{processingCount}</span>
                         </div>
                     </div>
                 </GlassPanel>
@@ -171,110 +252,7 @@ const Dashboard = () => {
                 </div>
             </div>
 
-            {/* System Management Section */}
-            <div>
-                <h3 className={`text-xl font-bold mb-4 ${isDark ? 'text-white' : 'text-slate-800'}`}>{t('systemManagement')}</h3>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* Order Processing */}
-                    <GlassPanel className="rounded-2xl p-6">
-                        <h4 className={`text-lg font-bold mb-4 ${isDark ? 'text-white' : 'text-slate-800'}`}>{t('processingOrders')}</h4>
-                        <div className="space-y-4">
-                            <div className={`flex items-center justify-between p-4 rounded-xl ${isDark ? 'bg-white/5' : 'bg-slate-50'}`}>
-                                <div>
-                                    <p className={`text-sm ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>{t('pendingOrders')}</p>
-                                    <p className={`text-lg font-bold ${isDark ? 'text-white' : 'text-slate-800'}`}>{orders.filter(o => o.status === 'pending').length}</p>
-                                </div>
-                                <button onClick={() => navigate('/orders')} className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-dark transition-all shadow-glow">
-                                    {t('view')}
-                                </button>
-                            </div>
-                            <div className={`flex items-center justify-between p-4 rounded-xl ${isDark ? 'bg-white/5' : 'bg-slate-50'}`}>
-                                <div>
-                                    <p className={`text-sm ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>{t('processingOrders')}</p>
-                                    <p className={`text-lg font-bold ${isDark ? 'text-white' : 'text-slate-800'}`}>{orders.filter(o => o.status === 'processing').length}</p>
-                                </div>
-                                <button onClick={() => navigate('/orders')} className="px-4 py-2 bg-warning text-white rounded-lg text-sm font-medium hover:bg-warning-dark transition-all">
-                                    {t('edit')}
-                                </button>
-                            </div>
-                            <div className={`flex items-center justify-between p-4 rounded-xl ${isDark ? 'bg-white/5' : 'bg-slate-50'}`}>
-                                <div>
-                                    <p className={`text-sm ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>{t('completedOrders')}</p>
-                                    <p className={`text-lg font-bold ${isDark ? 'text-white' : 'text-slate-800'}`}>{orders.filter(o => o.status === 'completed').length}</p>
-                                </div>
-                                <button onClick={() => navigate('/orders')} className="px-4 py-2 bg-info text-white rounded-lg text-sm font-medium hover:bg-info-dark transition-all">
-                                    {t('view')}
-                                </button>
-                            </div>
-                        </div>
-                    </GlassPanel>
 
-                    {/* Pricing Management */}
-                    <GlassPanel className="rounded-2xl p-6">
-                        <h4 className={`text-lg font-bold mb-4 ${isDark ? 'text-white' : 'text-slate-800'}`}>{t('priceManagement')}</h4>
-                        <div className="space-y-4">
-                            <div className={`p-4 rounded-xl ${isDark ? 'bg-white/5' : 'bg-slate-50'}`}>
-                                <p className={`text-sm mb-2 ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>{t('currentPrices')}</p>
-                                <div className="space-y-2 max-h-40 overflow-y-auto">
-                                    {services?.slice(0, 3).map((service, idx) => (
-                                        <div key={idx} className="flex justify-between items-center p-2 border-b border-glass-border">
-                                            <span className={isDark ? "text-slate-300" : "text-slate-600"}>{t(service.name)}</span>
-                                            <span className="font-bold text-primary">{service.price} {t('sar')}</span>
-                                        </div>
-                                    )) || (
-                                        <div className={`text-center py-4 text-sm ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
-                                            {t('noData')}
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    </GlassPanel>
-                </div>
-            </div>
-
-            {/* Customer Management Section - Using Real Data */}
-            <div>
-                <h3 className={`text-xl font-bold mb-4 ${isDark ? 'text-white' : 'text-slate-800'}`}>{t('customers')}</h3>
-                <GlassPanel className="rounded-2xl p-6">
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                        <div className="p-4 bg-primary/10 border border-primary/20 rounded-xl text-center">
-                            <p className="text-sm text-primary mb-1">{t('totalCustomers')}</p>
-                            <p className={`text-xl font-bold font-numbers ${isDark ? 'text-white' : 'text-slate-800'}`}>{stats.totalCustomers}</p>
-                        </div>
-                    </div>
-                    <div className="overflow-x-auto">
-                        <table className="w-full">
-                            <thead>
-                                <tr className={`text-right text-sm border-b ${isDark ? 'text-slate-400 border-glass-border' : 'text-slate-500 border-slate-200'}`}>
-                                    <th className="pb-3 px-2">{t('customerName')}</th>
-                                    <th className="pb-3 px-2">{t('email')}</th>
-                                    <th className="pb-3 px-2">{t('phone')}</th>
-                                    <th className="pb-3 px-2">{t('status')}</th>
-                                    <th className="pb-3 px-2">{t('actions')}</th>
-                                </tr>
-                            </thead>
-                            <tbody className={`text-sm ${isDark ? 'text-white' : 'text-slate-700'}`}>
-                                {recentCustomers.map((row, idx) => (
-                                    <tr key={idx} className={`border-b transition-colors last:border-0 ${isDark ? 'border-glass-border hover:bg-white/5' : 'border-slate-100 hover:bg-slate-50'}`}>
-                                        <td className="py-3 px-2">{row.name}</td>
-                                        <td className="py-3 px-2 font-mono text-xs">{row.email}</td>
-                                        <td className="py-3 px-2 font-numbers">{row.phone}</td>
-                                        <td className="py-3 px-2">
-                                            <span className={`px-2 py-1 rounded-full bg-${row.status === 'active' ? 'success' : 'warning'}/10 border border-${row.status === 'active' ? 'success' : 'warning'}/20 text-${row.status === 'active' ? 'success' : 'warning'} text-xs`}>
-                                                {t(row.status || 'unknown')}
-                                            </span>
-                                        </td>
-                                        <td className="py-3 px-2">
-                                            <button onClick={() => navigate('/customers')} className="text-primary hover:text-primary-glow text-sm font-medium">{t('view')}</button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </GlassPanel>
-            </div>
         </div >
     );
 };
