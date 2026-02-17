@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import GlassPanel from '../components/common/GlassPanel';
 import OrderModal from '../components/orders/OrderModal';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -20,6 +20,10 @@ const Orders = () => {
     // Filter states
     const [statusFilter, setStatusFilter] = useState('all');
 
+    // Pagination states
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
+
     // Filtered orders based on selected filters
     const filteredOrders = useMemo(() => {
         return orders.filter(order => {
@@ -27,6 +31,19 @@ const Orders = () => {
             return matchesStatus;
         });
     }, [orders, statusFilter]);
+
+    // Paginated orders
+    const paginatedOrders = useMemo(() => {
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        return filteredOrders.slice(startIndex, startIndex + itemsPerPage);
+    }, [filteredOrders, currentPage]);
+
+    const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
+
+    // Reset to first page when filters change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [statusFilter]);
 
     // Reset filters
     const handleResetFilters = () => {
@@ -179,7 +196,7 @@ const Orders = () => {
                             </tr>
                         </thead>
                         <tbody className={`text-sm ${isDark ? 'text-white' : 'text-slate-700'}`}>
-                            {filteredOrders.map((row, idx) => (
+                            {paginatedOrders.map((row, idx) => (
                                 <tr key={idx} className={`border-b transition-colors last:border-0 ${isDark ? 'border-glass-border hover:bg-white/5' : 'border-slate-100 hover:bg-slate-50'}`}>
                                     <td className="py-3 px-4 font-numbers">{row.id}</td>
                                     <td className="py-3 px-4">{row.customer}</td>
@@ -227,28 +244,52 @@ const Orders = () => {
                 )}
 
                 {/* Pagination */}
-                <div className="flex items-center justify-between mt-6">
-                    <div className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                        {t('showing')} {filteredOrders.length} {t('of')} {orders.length} {t('order')}
+                {totalPages > 0 && (
+                    <div className="flex items-center justify-between mt-6">
+                        <div className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                            {t('showing')} {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, filteredOrders.length)} {t('of')} {filteredOrders.length} {t('order')}
+                        </div>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                disabled={currentPage === 1}
+                                className={`px-3 py-2 rounded-lg text-sm transition-all border ${
+                                    currentPage === 1
+                                        ? (isDark ? 'bg-white/5 text-slate-600 border-glass-border cursor-not-allowed' : 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed')
+                                        : (isDark ? 'bg-white/5 hover:bg-white/10 text-slate-300 border-glass-border' : 'bg-slate-100 hover:bg-slate-200 text-slate-600 border-slate-200')
+                                }`}
+                            >
+                                {t('previous')}
+                            </button>
+                            
+                            {Array.from({ length: totalPages }, (_, i) => i + 1).map(pageNum => (
+                                <button
+                                    key={pageNum}
+                                    onClick={() => setCurrentPage(pageNum)}
+                                    className={`px-3 py-2 rounded-lg text-sm transition-all ${
+                                        currentPage === pageNum
+                                            ? 'bg-primary text-white shadow-glow'
+                                            : (isDark ? 'bg-white/5 hover:bg-white/10 text-slate-300 border border-glass-border' : 'bg-slate-100 hover:bg-slate-200 text-slate-600 border border-slate-200')
+                                    }`}
+                                >
+                                    {pageNum}
+                                </button>
+                            ))}
+                            
+                            <button
+                                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                disabled={currentPage === totalPages}
+                                className={`px-3 py-2 rounded-lg text-sm transition-all border ${
+                                    currentPage === totalPages
+                                        ? (isDark ? 'bg-white/5 text-slate-600 border-glass-border cursor-not-allowed' : 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed')
+                                        : (isDark ? 'bg-white/5 hover:bg-white/10 text-slate-300 border-glass-border' : 'bg-slate-100 hover:bg-slate-200 text-slate-600 border-slate-200')
+                                }`}
+                            >
+                                {t('next')}
+                            </button>
+                        </div>
                     </div>
-                    <div className="flex gap-2">
-                        <button className={`px-3 py-2 rounded-lg text-sm transition-all border ${isDark ? 'bg-white/5 hover:bg-white/10 text-slate-300 border-glass-border' : 'bg-slate-100 hover:bg-slate-200 text-slate-600 border-slate-200'}`}>
-                            {t('previous')}
-                        </button>
-                        <button className="px-3 py-2 bg-primary text-white rounded-lg text-sm transition-all shadow-glow">
-                            1
-                        </button>
-                        <button className={`px-3 py-2 rounded-lg text-sm transition-all border ${isDark ? 'bg-white/5 hover:bg-white/10 text-slate-300 border-glass-border' : 'bg-slate-100 hover:bg-slate-200 text-slate-600 border-slate-200'}`}>
-                            2
-                        </button>
-                        <button className={`px-3 py-2 rounded-lg text-sm transition-all border ${isDark ? 'bg-white/5 hover:bg-white/10 text-slate-300 border-glass-border' : 'bg-slate-100 hover:bg-slate-200 text-slate-600 border-slate-200'}`}>
-                            3
-                        </button>
-                        <button className={`px-3 py-2 rounded-lg text-sm transition-all border ${isDark ? 'bg-white/5 hover:bg-white/10 text-slate-300 border-glass-border' : 'bg-slate-100 hover:bg-slate-200 text-slate-600 border-slate-200'}`}>
-                            {t('next')}
-                        </button>
-                    </div>
-                </div>
+                )}
             </GlassPanel>
 
             {isModalOpen && (
