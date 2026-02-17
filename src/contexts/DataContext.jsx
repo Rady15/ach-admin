@@ -281,6 +281,16 @@ export function DataProvider({ children }) {
         }
     };
 
+    const deleteCustomer = async (id) => {
+        try {
+            await authAPI.deleteCustomer(id);
+            setCustomers(prev => prev.filter(c => c.id !== id));
+        } catch (error) {
+            console.error("Error deleting customer:", error);
+            throw error;
+        }
+    };
+
     return (
         <DataContext.Provider value={{
             orders,
@@ -294,6 +304,7 @@ export function DataProvider({ children }) {
             updateOrderStatus,
             assignTask,
             addEmployee,
+            deleteCustomer,
             loading, // Expose loading state
             fetchData // Expose refetch capability
         }}>
