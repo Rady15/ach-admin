@@ -72,16 +72,40 @@ export function DataProvider({ children }) {
                     role: (u.role || u.userRole || (u.roles && u.roles[0]) || 'employee').toLowerCase()
                 }));
 
-                // TEMP: No customers for now
-                const custs = [];
-
                 console.log('Filtered employees:', emps.length, emps);
-                console.log('Filtered customers:', custs.length, custs);
                 
                 setEmployees(emps);
-                setCustomers(custs);
             } else {
                 console.error("Failed to fetch users:", usersRes.reason);
+            }
+
+            // Fetch customers separately
+            try {
+                const customersRes = await authAPI.getAllCustomers();
+                const customersData = customersRes.data;
+                const allCustomers = Array.isArray(customersData) ? customersData : (customersData.data || customersData.customers || customersData.users || []);
+                
+                console.log('Account/all API Response:', customersData);
+                console.log('Processed customers array:', allCustomers);
+
+                const custs = allCustomers.map(c => ({
+                    ...c,
+                    id: c.userName || c.id || c.email,
+                    userName: c.userName || c.name || '---',
+                    name: c.fullName || c.userName || c.name || '---',
+                    email: c.email || '---',
+                    phone: c.phoneNumber || c.phone || '---',
+                    status: c.isActive !== false ? 'active' : 'inactive',
+                    totalSpent: c.totalSpent || c.totalOrdersAmount || 0,
+                    ordersCount: c.ordersCount || c.totalOrders || 0,
+                    createdAt: c.createdAt || c.registrationDate || new Date().toISOString()
+                }));
+
+                console.log('Processed customers:', custs.length, custs);
+                setCustomers(custs);
+            } catch (error) {
+                console.error("Failed to fetch customers:", error);
+                setCustomers([]);
             }
 
             if (requestRes.status === 'fulfilled') {

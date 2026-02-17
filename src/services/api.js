@@ -30,6 +30,7 @@ api.interceptors.request.use(
 export const authAPI = {
     login: (email, password) => api.post('/Account/login', { email, password }),
     getAllUsers: () => api.get('/Account/AllStaff'),
+    getAllCustomers: () => api.get('/Account/all'),
     suspendUser: (id) => api.put(`/Account/suspend/${id}`),
     unsuspendUser: (id) => api.put(`/Account/unsuspend/${id}`),
     getStats: () => api.get('/Account/stats'),
