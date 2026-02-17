@@ -8,7 +8,7 @@ import { authAPI } from '../services/api';
 const Customers = () => {
     const { t } = useLanguage();
     const { isDark } = useTheme();
-    const { customers, fetchData } = useData(); // Use global data
+    const { customers, fetchData, deleteCustomer } = useData(); // Use global data
 
     // Modal states
     const [isViewModalOpen, setIsViewModalOpen] = useState(false);
@@ -83,8 +83,15 @@ const Customers = () => {
 
     // Delete customer
     const handleDelete = async (customerId) => {
-        // Keeping as alias to suspend for consistency
-        handleSuspend(customerId);
+        if (window.confirm(t('confirmDelete') || 'هل أنت متأكد من حذف هذا العميل؟')) {
+            try {
+                await deleteCustomer(customerId);
+                await fetchData();
+            } catch (e) {
+                console.error(e);
+                alert("Failed to delete customer");
+            }
+        }
     };
 
     // Add new customer
