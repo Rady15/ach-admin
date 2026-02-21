@@ -64,7 +64,7 @@ export const servicesAPI = {
         console.warn('UserServices API not yet implemented on backend');
         return Promise.resolve({ data: { pending: 0, inProgress: 0, completed: 0 } });
     },
-    assignRequestToEmployee: (requestId, employeeId) => api.post('/UserServices/assign-request', { requestId, employeeId }),
+    assignRequestToEmployee: (requestId, employeeUserId) => api.post('/UserServices/assign-request', { requestId, employeeUserId }),
     updateRequestStatus: (requestId, status) => api.put('/UserServices/update-status', { requestId, status }),
     deleteRequest: (requestId) => {
         console.warn('UserServices API not yet implemented on backend');
