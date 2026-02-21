@@ -46,6 +46,7 @@ export const authAPI = {
 
 export const servicesAPI = {
     getAllRequests: () => api.get('/UserServices/all'),
+    getMyRequests: () => api.get('/UserServices/my-requests'),
     getMyAllServices: () => {
         console.warn('UserServices API not yet implemented on backend');
         return Promise.resolve({ data: [] });
@@ -63,10 +64,7 @@ export const servicesAPI = {
         console.warn('UserServices API not yet implemented on backend');
         return Promise.resolve({ data: { pending: 0, inProgress: 0, completed: 0 } });
     },
-    assignRequestToEmployee: (requestId, employeeId) => {
-        console.warn('UserServices API not yet implemented on backend');
-        return Promise.resolve({ data: null });
-    },
+    assignRequestToEmployee: (requestId, employeeId) => api.post('/UserServices/assign-request', { requestId, employeeId }),
     updateRequestStatus: (requestId, status) => {
         console.warn('UserServices API not yet implemented on backend');
         return Promise.resolve({ data: null });

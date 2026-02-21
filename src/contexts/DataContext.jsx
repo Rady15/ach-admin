@@ -39,13 +39,18 @@ export function DataProvider({ children }) {
 
         setLoading(true);
         try {
-            // Using Promise.allSettled to ensure partial failures don't block everything
-            const [usersRes, requestRes, paymentsRes, servicesRes] = await Promise.allSettled([
-                authAPI.getAllUsers(),
-                servicesAPI.getAllRequests(),
+            const userRole = String(user.role).toLowerCase();
+            const isEmployee = userRole === 'staff' || userRole === 'employee';
+            const isAdmin = !isEmployee;
+
+            const fetchPromises = [
+                isAdmin ? authAPI.getAllUsers() : Promise.resolve({ data: [] }),
+                isEmployee ? servicesAPI.getMyRequests() : servicesAPI.getAllRequests(),
                 paymentsAPI.getAllPayments(),
                 pricingAPI.getAllServices()
-            ]);
+            ];
+
+            const [usersRes, requestRes, paymentsRes, servicesRes] = await Promise.allSettled(fetchPromises);
 
             if (usersRes.status === 'fulfilled') {
                 // Handle different response structures (array or wrapped in data property)
@@ -79,33 +84,35 @@ export function DataProvider({ children }) {
                 console.error("Failed to fetch users:", usersRes.reason);
             }
 
-            // Fetch customers separately
-            try {
-                const customersRes = await authAPI.getAllCustomers();
-                const customersData = customersRes.data;
-                const allCustomers = Array.isArray(customersData) ? customersData : (customersData.data || customersData.customers || customersData.users || []);
-                
-                console.log('Account/all API Response:', customersData);
-                console.log('Processed customers array:', allCustomers);
+            // Fetch customers separately (admin only)
+            if (isAdmin) {
+                try {
+                    const customersRes = await authAPI.getAllCustomers();
+                    const customersData = customersRes.data;
+                    const allCustomers = Array.isArray(customersData) ? customersData : (customersData.data || customersData.customers || customersData.users || []);
+                    
+                    console.log('Account/all API Response:', customersData);
+                    console.log('Processed customers array:', allCustomers);
 
-                const custs = allCustomers.map(c => ({
-                    ...c,
-                    id: c.userName || c.id || c.email,
-                    userName: c.userName || c.name || '---',
-                    name: c.fullName || c.userName || c.name || '---',
-                    email: c.email || '---',
-                    phone: c.phoneNumber || c.phone || '---',
-                    status: c.isActive !== false ? 'active' : 'inactive',
-                    totalSpent: c.totalSpent || c.totalOrdersAmount || 0,
-                    ordersCount: c.ordersCount || c.totalOrders || 0,
-                    createdAt: c.createdAt || c.registrationDate || new Date().toISOString()
-                }));
+                    const custs = allCustomers.map(c => ({
+                        ...c,
+                        id: c.userName || c.id || c.email,
+                        userName: c.userName || c.name || '---',
+                        name: c.fullName || c.userName || c.name || '---',
+                        email: c.email || '---',
+                        phone: c.phoneNumber || c.phone || '---',
+                        status: c.isActive !== false ? 'active' : 'inactive',
+                        totalSpent: c.totalSpent || c.totalOrdersAmount || 0,
+                        ordersCount: c.ordersCount || c.totalOrders || 0,
+                        createdAt: c.createdAt || c.registrationDate || new Date().toISOString()
+                    }));
 
-                console.log('Processed customers:', custs.length, custs);
-                setCustomers(custs);
-            } catch (error) {
-                console.error("Failed to fetch customers:", error);
-                setCustomers([]);
+                    console.log('Processed customers:', custs.length, custs);
+                    setCustomers(custs);
+                } catch (error) {
+                    console.error("Failed to fetch customers:", error);
+                    setCustomers([]);
+                }
             }
 
             if (requestRes.status === 'fulfilled') {

@@ -18,15 +18,8 @@ const EmployeeDashboard = () => {
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [modalMode, setModalMode] = useState('view');
 
-    // Filter tasks assigned to current employee
-    const myTasks = orders.filter(order => {
-        // If user has ID, filter by it. Fallback to processing if no ID found (for safety)
-        if (user?.id) {
-            return order.assignedTo === user.id;
-        }
-        // Default fallback logic
-        return order.status === 'processing';
-    });
+    // Tasks are already filtered by the API (getMyRequests returns only assigned tasks)
+    const myTasks = orders;
 
     const filteredTasks = filter === 'all' ? myTasks : myTasks.filter(task => task.status === filter);
 

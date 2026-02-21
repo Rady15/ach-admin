@@ -30,8 +30,9 @@ export function AuthProvider({ children }) {
             // normalize user object
             const userData = {
                 ...data,
+                id: data.id || data.userId || data.userName || data.email,
                 // Ensure we have a consistent role property if backend uses different naming
-                role: data.role || (email.includes('admin') ? 'admin' : 'employee') // Fallback if role is missing (temporary)
+                role: data.role || data.userRole || (email.includes('admin') ? 'admin' : 'employee') // Fallback if role is missing (temporary)
             };
 
             setUser(userData);
