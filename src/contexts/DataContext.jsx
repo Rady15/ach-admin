@@ -239,10 +239,13 @@ export function DataProvider({ children }) {
     };
 
     const updateOrderStatus = async (id, status) => {
-        // TODO: Implement API call when endpoint available.
-        // For now, update local state or do nothing? 
-        // Better to not break UI:
-        setOrders(orders.map(order => order.id === id ? { ...order, status } : order));
+        try {
+            await servicesAPI.updateRequestStatus(id, status);
+            setOrders(orders.map(order => order.id === id ? { ...order, status } : order));
+        } catch (error) {
+            console.error("Failed to update order status:", error);
+            throw error;
+        }
     };
 
     const assignTask = async (orderId, employeeId) => {
