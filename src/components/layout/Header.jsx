@@ -3,6 +3,7 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import ThemeToggle from '../common/ThemeToggle';
 import LanguageToggle from '../common/LanguageToggle';
+import NotificationDropdown from './NotificationDropdown';
 
 const Header = ({ title, toggleSidebar }) => {
     const { t } = useLanguage();
@@ -35,7 +36,6 @@ const Header = ({ title, toggleSidebar }) => {
             </div>
 
             <div className="flex items-center gap-4">
-                {/* Search Bar */}
                 <div className="relative group hidden md:block">
                     <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                         <span className={`material-symbols-outlined group-focus-within:text-primary transition-colors ${isDark ? 'text-slate-400' : 'text-slate-400'}`}>search</span>
@@ -53,21 +53,10 @@ const Header = ({ title, toggleSidebar }) => {
                     />
                 </div>
 
-                {/* Actions */}
                 <div className="flex items-center gap-2">
                     <LanguageToggle />
                     <ThemeToggle />
-
-                    <button className={`
-                        size-10 flex items-center justify-center rounded-xl border transition-all relative
-                        ${isDark
-                            ? 'bg-glass-surface border-glass-border text-slate-300 hover:text-white hover:bg-white/10'
-                            : 'bg-white border-slate-200 text-slate-600 hover:text-primary hover:bg-slate-50 shadow-sm'
-                        }
-                    `}>
-                        <span className="absolute top-2.5 left-3 size-2 bg-red-500 rounded-full border border-black shadow-[0_0_8px_rgba(239,68,68,0.6)]"></span>
-                        <span className="material-symbols-outlined text-[20px]">notifications</span>
-                    </button>
+                    <NotificationDropdown />
                 </div>
             </div>
         </header>

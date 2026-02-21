@@ -7,6 +7,7 @@ import { ThemeProvider } from './contexts/ThemeContext.jsx'
 import { LanguageProvider } from './contexts/LanguageContext.jsx'
 import { DataProvider } from './contexts/DataContext.jsx'
 import { AuthProvider } from './contexts/AuthContext.jsx'
+import { NotificationProvider } from './contexts/NotificationContext.jsx'
 
 createRoot(document.getElementById('root')).render(
     <StrictMode>
@@ -15,7 +16,9 @@ createRoot(document.getElementById('root')).render(
                 <LanguageProvider>
                     <AuthProvider>
                         <DataProvider>
-                            <App />
+                            <NotificationProvider>
+                                <App />
+                            </NotificationProvider>
                         </DataProvider>
                     </AuthProvider>
                 </LanguageProvider>

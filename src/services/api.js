@@ -174,4 +174,12 @@ export const settingsAPI = {
     },
 };
 
+export const notificationsAPI = {
+    getNotifications: () => api.get('/Notifications/all'),
+    getUnreadCount: () => api.get('/Notifications/unread-count'),
+    markAsRead: (notificationId) => api.put(`/Notifications/mark-read/${notificationId}`),
+    markAllAsRead: () => api.put('/Notifications/mark-all-read'),
+    deleteNotification: (notificationId) => api.delete(`/Notifications/${notificationId}`),
+};
+
 export default api;
