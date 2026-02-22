@@ -13,7 +13,7 @@ const BellIcon = ({ hasUnread }) => (
 
 const NotificationDropdown = () => {
     const { notifications, unreadCount, markAsRead, markAllAsRead, deleteNotification, loading } = useNotifications();
-    const { t } = useLanguage();
+    const { t, isRTL } = useLanguage();
     const { isDark } = useTheme();
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef(null);
@@ -95,7 +95,7 @@ const NotificationDropdown = () => {
             >
                 <BellIcon hasUnread={unreadCount > 0} />
                 {unreadCount > 0 && (
-                    <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center bg-red-500 text-white text-[10px] font-bold rounded-full px-1">
+                    <span className={`absolute -top-1 ${isRTL ? '-left-1' : '-right-1'} min-w-[18px] h-[18px] flex items-center justify-center bg-red-500 text-white text-[10px] font-bold rounded-full px-1`}>
                         {unreadCount > 99 ? '99+' : unreadCount}
                     </span>
                 )}
@@ -103,7 +103,7 @@ const NotificationDropdown = () => {
 
             {isOpen && (
                 <div className={`
-                    absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl border shadow-xl z-50 max-h-[70vh] flex flex-col
+                    absolute ${isRTL ? 'left-0' : 'right-0'} mt-2 w-80 sm:w-96 rounded-2xl border shadow-xl z-50 max-h-[70vh] flex flex-col
                     ${isDark
                         ? 'bg-glass-surface border-glass-border'
                         : 'bg-white border-slate-200'
