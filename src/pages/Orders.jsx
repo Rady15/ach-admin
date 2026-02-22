@@ -129,8 +129,8 @@ const Orders = () => {
                         </div>
                     </div>
                     <div>
-                        <p className={`text-sm font-medium mb-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{t('processingOrders')}</p>
-                        <h3 className={`text-2xl font-bold font-numbers tracking-tight group-hover:text-info transition-colors ${isDark ? 'text-white' : 'text-slate-800'}`}>{orders.filter(o => o.status === 'processing').length}</h3>
+                        <p className={`text-sm font-medium mb-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{t('inProgressOrders')}</p>
+                        <h3 className={`text-2xl font-bold font-numbers tracking-tight group-hover:text-info transition-colors ${isDark ? 'text-white' : 'text-slate-800'}`}>{orders.filter(o => o.status?.toLowerCase() === 'inprogress').length}</h3>
                     </div>
                 </GlassPanel>
             </div>
@@ -146,9 +146,11 @@ const Orders = () => {
                             className={`px-4 py-2 border rounded-xl text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none ${isDark ? 'bg-background-dark border-glass-border text-white' : 'bg-white border-slate-200 text-slate-800'}`}
                         >
                             <option value="all">{t('allStatuses')}</option>
-                            <option value="completed">{t('completed')}</option>
-                            <option value="processing">{t('processing')}</option>
                             <option value="pending">{t('pending')}</option>
+                            <option value="inprogress">{t('inProgress')}</option>
+                            <option value="waitingforpayment">{t('waitingForPayment')}</option>
+                            <option value="paid">{t('paid')}</option>
+                            <option value="completed">{t('completed')}</option>
                             <option value="cancelled">{t('cancelled')}</option>
                         </select>
                         <button

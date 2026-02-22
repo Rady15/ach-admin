@@ -12,9 +12,11 @@ export function DataProvider({ children }) {
     const getStatusColor = (status) => {
         switch (status?.toLowerCase()) {
             case 'completed': return 'success';
-            case 'processing': return 'info';
+            case 'paid': return 'success';
+            case 'inprogress': return 'info';
             case 'pending': return 'warning';
             case 'cancelled': return 'danger';
+            case 'waitingforpayment': return 'purple';
             default: return 'slate-400';
         }
     };
@@ -167,7 +169,7 @@ export function DataProvider({ children }) {
     useEffect(() => {
         const totalOrders = orders.length;
         const activeOrders = orders.filter(o =>
-            ['pending', 'processing'].includes(o.status?.toLowerCase())
+            ['pending', 'inprogress', 'waitingforpayment'].includes(o.status?.toLowerCase())
         ).length;
         const totalCustomers = customers.length;
         const totalRevenue = orders

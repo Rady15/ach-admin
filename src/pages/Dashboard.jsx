@@ -16,20 +16,12 @@ const Dashboard = () => {
 
     // Calculate order status counts for the chart
     const totalOrdersCount = orders.length;
-    const completedCount = orders.filter(o => o.status === 'completed').length;
-    const pendingCount = orders.filter(o => o.status === 'pending').length;
-    const processingCount = orders.filter(o => o.status === 'processing').length;
-    
-    // Calculate percentages for donut chart
-    const completedPercent = totalOrdersCount > 0 ? (completedCount / totalOrdersCount) * 100 : 0;
-    const pendingPercent = totalOrdersCount > 0 ? (pendingCount / totalOrdersCount) * 100 : 0;
-    const processingPercent = totalOrdersCount > 0 ? (processingCount / totalOrdersCount) * 100 : 0;
-    
-    // SVG circle calculations (circumference = 2 * π * 70 ≈ 440)
-    const circumference = 440;
-    const completedOffset = circumference - (completedPercent / 100) * circumference;
-    const pendingOffset = circumference - (pendingPercent / 100) * circumference;
-    const processingOffset = circumference - (processingPercent / 100) * circumference;
+    const completedCount = orders.filter(o => o.status?.toLowerCase() === 'completed').length;
+    const paidCount = orders.filter(o => o.status?.toLowerCase() === 'paid').length;
+    const pendingCount = orders.filter(o => o.status?.toLowerCase() === 'pending').length;
+    const inProgressCount = orders.filter(o => o.status?.toLowerCase() === 'inprogress').length;
+    const waitingForPaymentCount = orders.filter(o => o.status?.toLowerCase() === 'waitingforpayment').length;
+    const cancelledCount = orders.filter(o => o.status?.toLowerCase() === 'cancelled').length;
 
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-300">
@@ -104,8 +96,7 @@ const Dashboard = () => {
                     </div>
                     {/* Order Status Distribution Bar Chart */}
                     <div className="w-full h-[300px] relative z-10 flex flex-col justify-end gap-4 px-4">
-                        <div className="flex items-end justify-around h-[250px] gap-4">
-                            {/* Completed Bar */}
+                        <div className="flex items-end justify-around h-[250px] gap-2">
                             <div className="flex flex-col items-center gap-2 flex-1">
                                 <span className={`text-sm font-bold font-numbers ${isDark ? 'text-white' : 'text-slate-800'}`}>{completedCount}</span>
                                 <div 
@@ -114,7 +105,14 @@ const Dashboard = () => {
                                 ></div>
                                 <span className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{t('completed')}</span>
                             </div>
-                            {/* Pending Bar */}
+                            <div className="flex flex-col items-center gap-2 flex-1">
+                                <span className={`text-sm font-bold font-numbers ${isDark ? 'text-white' : 'text-slate-800'}`}>{paidCount}</span>
+                                <div 
+                                    className="w-full bg-success rounded-t-xl transition-all duration-500 shadow-[0_0_15px_rgba(16,185,129,0.4)]"
+                                    style={{ height: totalOrdersCount > 0 ? `${(paidCount / totalOrdersCount) * 200}px` : '0px', minHeight: paidCount > 0 ? '4px' : '0px' }}
+                                ></div>
+                                <span className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{t('paid')}</span>
+                            </div>
                             <div className="flex flex-col items-center gap-2 flex-1">
                                 <span className={`text-sm font-bold font-numbers ${isDark ? 'text-white' : 'text-slate-800'}`}>{pendingCount}</span>
                                 <div 
@@ -123,14 +121,21 @@ const Dashboard = () => {
                                 ></div>
                                 <span className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{t('pending')}</span>
                             </div>
-                            {/* Processing Bar */}
                             <div className="flex flex-col items-center gap-2 flex-1">
-                                <span className={`text-sm font-bold font-numbers ${isDark ? 'text-white' : 'text-slate-800'}`}>{processingCount}</span>
+                                <span className={`text-sm font-bold font-numbers ${isDark ? 'text-white' : 'text-slate-800'}`}>{inProgressCount}</span>
                                 <div 
                                     className="w-full bg-info rounded-t-xl transition-all duration-500 shadow-[0_0_15px_rgba(59,130,246,0.4)]"
-                                    style={{ height: totalOrdersCount > 0 ? `${(processingCount / totalOrdersCount) * 200}px` : '0px', minHeight: processingCount > 0 ? '4px' : '0px' }}
+                                    style={{ height: totalOrdersCount > 0 ? `${(inProgressCount / totalOrdersCount) * 200}px` : '0px', minHeight: inProgressCount > 0 ? '4px' : '0px' }}
                                 ></div>
-                                <span className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{t('processing')}</span>
+                                <span className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{t('inProgress')}</span>
+                            </div>
+                            <div className="flex flex-col items-center gap-2 flex-1">
+                                <span className={`text-sm font-bold font-numbers ${isDark ? 'text-white' : 'text-slate-800'}`}>{waitingForPaymentCount}</span>
+                                <div 
+                                    className="w-full bg-purple-500 rounded-t-xl transition-all duration-500 shadow-[0_0_15px_rgba(168,85,247,0.4)]"
+                                    style={{ height: totalOrdersCount > 0 ? `${(waitingForPaymentCount / totalOrdersCount) * 200}px` : '0px', minHeight: waitingForPaymentCount > 0 ? '4px' : '0px' }}
+                                ></div>
+                                <span className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{t('waitingForPayment')}</span>
                             </div>
                         </div>
                     </div>
@@ -144,57 +149,21 @@ const Dashboard = () => {
                             <span className={`text-3xl font-bold font-numbers ${isDark ? 'text-white' : 'text-slate-800'}`}>{totalOrdersCount}</span>
                             <span className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{t('totalOrders')}</span>
                         </div>
-                        {/* Dynamic Donut Chart */}
-                        <svg className="transform -rotate-90" height="180" viewBox="0 0 180 180" width="180">
-                            <circle cx="90" cy="90" fill="none" r="70" stroke={isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"} strokeWidth="20"></circle>
-                            {/* Completed Segment (Green) */}
-                            {completedCount > 0 && (
-                                <circle 
-                                    className="drop-shadow-[0_0_10px_rgba(16,185,129,0.5)] transition-all duration-500" 
-                                    cx="90" cy="90" fill="none" r="70" 
-                                    stroke="#10b981" 
-                                    strokeDasharray={circumference} 
-                                    strokeDashoffset={completedOffset}
-                                    strokeLinecap="round" 
-                                    strokeWidth="20"
-                                ></circle>
-                            )}
-                            {/* Pending Segment (Orange) */}
-                            {pendingCount > 0 && (
-                                <circle 
-                                    className="drop-shadow-[0_0_10px_rgba(245,158,11,0.5)] transition-all duration-500" 
-                                    cx="90" cy="90" fill="none" r="70" 
-                                    stroke="#f59e0b" 
-                                    strokeDasharray={circumference} 
-                                    strokeDashoffset={pendingOffset}
-                                    strokeLinecap="round" 
-                                    strokeWidth="20"
-                                    style={{ transform: `rotate(${(completedPercent / 100) * 360}deg)`, transformOrigin: '90px 90px' }}
-                                ></circle>
-                            )}
-                            {/* Processing Segment (Blue) */}
-                            {processingCount > 0 && (
-                                <circle 
-                                    className="drop-shadow-[0_0_10px_rgba(59,130,246,0.5)] transition-all duration-500" 
-                                    cx="90" cy="90" fill="none" r="70" 
-                                    stroke="#3b82f6" 
-                                    strokeDasharray={circumference} 
-                                    strokeDashoffset={processingOffset}
-                                    strokeLinecap="round" 
-                                    strokeWidth="20"
-                                    style={{ transform: `rotate(${((completedPercent + pendingPercent) / 100) * 360}deg)`, transformOrigin: '90px 90px' }}
-                                ></circle>
-                            )}
-                        </svg>
                     </div>
-                    <div className="flex flex-col gap-3">
-                        {/* Dynamic Counts */}
+                    <div className="flex flex-col gap-2">
                         <div className={`flex items-center justify-between p-2 rounded-lg transition-colors ${isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50'}`}>
                             <div className="flex items-center gap-2">
                                 <span className="size-3 rounded-full bg-success shadow-[0_0_8px_rgba(16,185,129,0.6)]"></span>
                                 <span className={`text-sm ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>{t('completed')}</span>
                             </div>
                             <span className={`text-sm font-bold font-numbers ${isDark ? 'text-white' : 'text-slate-800'}`}>{completedCount}</span>
+                        </div>
+                        <div className={`flex items-center justify-between p-2 rounded-lg transition-colors ${isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50'}`}>
+                            <div className="flex items-center gap-2">
+                                <span className="size-3 rounded-full bg-success shadow-[0_0_8px_rgba(16,185,129,0.6)]"></span>
+                                <span className={`text-sm ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>{t('paid')}</span>
+                            </div>
+                            <span className={`text-sm font-bold font-numbers ${isDark ? 'text-white' : 'text-slate-800'}`}>{paidCount}</span>
                         </div>
                         <div className={`flex items-center justify-between p-2 rounded-lg transition-colors ${isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50'}`}>
                             <div className="flex items-center gap-2">
@@ -206,9 +175,23 @@ const Dashboard = () => {
                         <div className={`flex items-center justify-between p-2 rounded-lg transition-colors ${isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50'}`}>
                             <div className="flex items-center gap-2">
                                 <span className="size-3 rounded-full bg-info shadow-[0_0_8px_rgba(59,130,246,0.6)]"></span>
-                                <span className={`text-sm ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>{t('processing')}</span>
+                                <span className={`text-sm ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>{t('inProgress')}</span>
                             </div>
-                            <span className={`text-sm font-bold font-numbers ${isDark ? 'text-white' : 'text-slate-800'}`}>{processingCount}</span>
+                            <span className={`text-sm font-bold font-numbers ${isDark ? 'text-white' : 'text-slate-800'}`}>{inProgressCount}</span>
+                        </div>
+                        <div className={`flex items-center justify-between p-2 rounded-lg transition-colors ${isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50'}`}>
+                            <div className="flex items-center gap-2">
+                                <span className="size-3 rounded-full bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.6)]"></span>
+                                <span className={`text-sm ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>{t('waitingForPayment')}</span>
+                            </div>
+                            <span className={`text-sm font-bold font-numbers ${isDark ? 'text-white' : 'text-slate-800'}`}>{waitingForPaymentCount}</span>
+                        </div>
+                        <div className={`flex items-center justify-between p-2 rounded-lg transition-colors ${isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50'}`}>
+                            <div className="flex items-center gap-2">
+                                <span className="size-3 rounded-full bg-danger shadow-[0_0_8px_rgba(239,68,68,0.6)]"></span>
+                                <span className={`text-sm ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>{t('cancelled')}</span>
+                            </div>
+                            <span className={`text-sm font-bold font-numbers ${isDark ? 'text-white' : 'text-slate-800'}`}>{cancelledCount}</span>
                         </div>
                     </div>
                 </GlassPanel>
