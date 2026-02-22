@@ -9,7 +9,7 @@ import { servicesAPI } from '../services/api';
 const Orders = () => {
     const { t } = useLanguage();
     const { isDark } = useTheme();
-    const { orders, fetchData } = useData();
+    const { orders, fetchData, employees } = useData();
     // Removed local mock data
 
 
@@ -39,6 +39,12 @@ const Orders = () => {
     }, [filteredOrders, currentPage]);
 
     const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
+
+    const getEmployeeName = (assignedTo) => {
+        if (!assignedTo) return t('unassigned') || 'غير مسند';
+        const employee = employees.find(emp => emp.id === assignedTo || emp.userName === assignedTo);
+        return employee ? employee.name : assignedTo;
+    };
 
     // Reset to first page when filters change
     useEffect(() => {
@@ -192,6 +198,7 @@ const Orders = () => {
                                 <th className="pb-3 px-4 font-medium">{t('customer')}</th>
                                 <th className="pb-3 px-4 font-medium">{t('service')}</th>
                                 <th className="pb-3 px-4 font-medium">{t('price')}</th>
+                                <th className="pb-3 px-4 font-medium">{t('assignedTo')}</th>
                                 <th className="pb-3 px-4 font-medium">{t('status')}</th>
                                 <th className="pb-3 px-4 font-medium">{t('date')}</th>
                                 <th className="pb-3 px-4 font-medium">{t('actions')}</th>
@@ -204,6 +211,11 @@ const Orders = () => {
                                     <td className="py-3 px-4">{row.customer}</td>
                                     <td className="py-3 px-4">{t(row.service)}</td>
                                     <td className="py-3 px-4 font-numbers">{row.price} {t('sar')}</td>
+                                    <td className="py-3 px-4">
+                                        <span className={`text-xs ${row.assignedTo ? (isDark ? 'text-info' : 'text-info') : (isDark ? 'text-slate-500' : 'text-slate-400')}`}>
+                                            {getEmployeeName(row.assignedTo)}
+                                        </span>
+                                    </td>
                                     <td className="py-3 px-4">
                                         <span className={`px-3 py-1 rounded-full bg-${row.statusColor}/10 border border-${row.statusColor}/20 text-${row.statusColor} text-xs`}>
                                             {t(row.status)}

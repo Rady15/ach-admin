@@ -9,7 +9,7 @@ const Dashboard = () => {
     const { t } = useLanguage();
     const { isDark } = useTheme();
     const navigate = useNavigate();
-    const { stats, orders } = useData();
+    const { stats, orders, employees } = useData();
 
     // Use recent 3 orders for display
     const recentOrders = orders.slice(0, 3);
@@ -22,6 +22,12 @@ const Dashboard = () => {
     const inProgressCount = orders.filter(o => o.status?.toLowerCase() === 'inprogress').length;
     const waitingForPaymentCount = orders.filter(o => o.status?.toLowerCase() === 'waitingforpayment').length;
     const cancelledCount = orders.filter(o => o.status?.toLowerCase() === 'cancelled').length;
+
+    const getEmployeeName = (assignedTo) => {
+        if (!assignedTo) return null;
+        const employee = employees.find(emp => emp.id === assignedTo || emp.userName === assignedTo);
+        return employee ? employee.name : null;
+    };
 
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-300">
@@ -207,29 +213,37 @@ const Dashboard = () => {
                     </button>
                 </div>
                 <div className="flex flex-col gap-3">
-                    {recentOrders.length > 0 ? recentOrders.map((order, idx) => (
-                        <GlassPanel key={idx} className={`p-4 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-4 transition-all cursor-pointer group ${isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50'}`}>
-                            <div className="flex items-center gap-4 w-full sm:w-auto">
-                                <div className={`size-10 rounded-full bg-primary/20 flex items-center justify-center text-primary`}>
-                                    <span className="material-symbols-outlined">description</span>
+                    {recentOrders.length > 0 ? recentOrders.map((order, idx) => {
+                        const assignedEmployee = getEmployeeName(order.assignedTo);
+                        return (
+                            <GlassPanel key={idx} className={`p-4 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-4 transition-all cursor-pointer group ${isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50'}`}>
+                                <div className="flex items-center gap-4 w-full sm:w-auto">
+                                    <div className={`size-10 rounded-full bg-primary/20 flex items-center justify-center text-primary`}>
+                                        <span className="material-symbols-outlined">description</span>
+                                    </div>
+                                    <div>
+                                        <h4 className={`font-bold text-sm ${isDark ? 'text-white' : 'text-slate-800'}`}>{order.customer}</h4>
+                                        <p className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{t(order.service)}</p>
+                                        {assignedEmployee && (
+                                            <p className={`text-xs mt-1 ${isDark ? 'text-info' : 'text-info'}`}>
+                                                {t('assignedTo')}: {assignedEmployee}
+                                            </p>
+                                        )}
+                                    </div>
                                 </div>
-                                <div>
-                                    <h4 className={`font-bold text-sm ${isDark ? 'text-white' : 'text-slate-800'}`}>{order.customer}</h4>
-                                    <p className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{t(order.service)}</p>
+                                <div className="flex items-center justify-between w-full sm:w-auto gap-8 md:gap-16">
+                                    <div className="flex flex-col items-start sm:items-end">
+                                        <span className={`text-xs mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>{t('price')}</span>
+                                        <span className={`text-sm font-numbers ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>{order.amount} {t('sar')}</span>
+                                    </div>
+                                    <div className="flex flex-col items-start sm:items-end">
+                                        <span className={`text-xs mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>{t('status')}</span>
+                                        <span className={`text-sm font-bold font-numbers ${isDark ? 'text-white' : 'text-slate-800'}`}>{t(order.status)}</span>
+                                    </div>
                                 </div>
-                            </div>
-                            <div className="flex items-center justify-between w-full sm:w-auto gap-8 md:gap-16">
-                                <div className="flex flex-col items-start sm:items-end">
-                                    <span className={`text-xs mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>{t('price')}</span>
-                                    <span className={`text-sm font-numbers ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>{order.amount} {t('sar')}</span>
-                                </div>
-                                <div className="flex flex-col items-start sm:items-end">
-                                    <span className={`text-xs mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>{t('status')}</span>
-                                    <span className={`text-sm font-bold font-numbers ${isDark ? 'text-white' : 'text-slate-800'}`}>{t(order.status)}</span>
-                                </div>
-                            </div>
-                        </GlassPanel>
-                    )) : (
+                            </GlassPanel>
+                        );
+                    }) : (
                         <div className="text-center py-4 text-slate-500">{t('noData')}</div>
                     )}
                 </div>

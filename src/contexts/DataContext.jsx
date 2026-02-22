@@ -132,12 +132,10 @@ export function DataProvider({ children }) {
                         size: '---'
                     })) : [],
                     serviceDetails: order.serviceDetails || {},
-                    assignedTo: order.employeeId || null,
+                    assignedTo: order.assignedEmployeeUserId || order.employeeId || null,
                     statusColor: getStatusColor(String(order.status).toLowerCase())
                 }));
                 setOrders(mappedOrders);
-            } else {
-                console.error("Failed to fetch requests:", requestRes.reason);
             }
 
             if (paymentsRes.status === 'fulfilled') {

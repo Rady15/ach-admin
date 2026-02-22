@@ -199,17 +199,26 @@ const OrderModal = ({ onClose, order = null, mode = 'add' }) => {
                             {/* Assign Task - Visible to all, Editable ONLY by Admin */}
                             <div>
                                 <label className="block text-slate-300 text-sm mb-2">{t('assignedTo') || 'مسند إلى'}</label>
-                                <select
-                                    disabled={isView || !isAdmin} // Only Admin can change this
-                                    className="w-full px-4 py-3 bg-white/5 border border-glass-border rounded-xl text-white text-sm focus:outline-none focus:border-primary transition-all [&>option]:bg-[#1e293b] disabled:opacity-50 disabled:cursor-not-allowed"
-                                    value={formData.assignedTo}
-                                    onChange={e => setFormData({ ...formData, assignedTo: e.target.value })}
-                                >
-                                    <option value="">{t('unassigned') || 'غير مسند'}</option>
-                                    {employees.map(emp => (
-                                        <option key={emp.id} value={emp.id}>{emp.name}</option>
-                                    ))}
-                                </select>
+                                {isView ? (
+                                    <div className="w-full px-4 py-3 bg-white/5 border border-glass-border rounded-xl text-white text-sm opacity-80">
+                                        {formData.assignedTo 
+                                            ? (employees.find(emp => emp.id === formData.assignedTo || emp.userName === formData.assignedTo)?.name || formData.assignedTo)
+                                            : (t('unassigned') || 'غير مسند')
+                                        }
+                                    </div>
+                                ) : (
+                                    <select
+                                        disabled={!isAdmin}
+                                        className="w-full px-4 py-3 bg-white/5 border border-glass-border rounded-xl text-white text-sm focus:outline-none focus:border-primary transition-all [&>option]:bg-[#1e293b] disabled:opacity-50 disabled:cursor-not-allowed"
+                                        value={formData.assignedTo || ''}
+                                        onChange={e => setFormData({ ...formData, assignedTo: e.target.value })}
+                                    >
+                                        <option value="">{t('unassigned') || 'غير مسند'}</option>
+                                        {employees.map(emp => (
+                                            <option key={emp.id} value={emp.id}>{emp.name}</option>
+                                        ))}
+                                    </select>
+                                )}
                                 {!isAdmin && mode !== 'add' && <p className="text-xs text-slate-500 mt-1">* {t('onlyAdminCanAssign') || 'فقط المشرف يمكنه تعيين الموظفين'}</p>}
                             </div>
 
