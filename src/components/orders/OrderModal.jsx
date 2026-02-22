@@ -188,7 +188,9 @@ const OrderModal = ({ onClose, order = null, mode = 'add' }) => {
                                     onChange={e => setFormData({ ...formData, status: e.target.value })}
                                 >
                                     <option value="pending">{t('pending')}</option>
-                                    <option value="processing">{t('processing')}</option>
+                                    <option value="inprogress">{t('inProgress')}</option>
+                                    <option value="waitingforpayment">{t('waitingForPayment')}</option>
+                                    <option value="paid">{t('paid')}</option>
                                     <option value="completed">{t('completed')}</option>
                                     <option value="cancelled">{t('cancelled')}</option>
                                 </select>
