@@ -218,8 +218,6 @@ export function DataProvider({ children }) {
 
             // Handle Price Change
             if (updatedOrder.amount !== oldOrder.amount) {
-                // Ensure price is formatted as expected by API (string or double?) 
-                // User JSON showed "price": "200.00"
                 await servicesAPI.setPrice(updatedOrder.id, updatedOrder.amount);
             }
 
@@ -228,12 +226,19 @@ export function DataProvider({ children }) {
                 await servicesAPI.updateRequestStatus(updatedOrder.id, updatedOrder.status);
             }
 
+            // Handle Assignment Change
+            if (updatedOrder.assignedTo !== oldOrder.assignedTo) {
+                const employeeId = updatedOrder.assignedTo || null;
+                if (employeeId) {
+                    await servicesAPI.assignRequestToEmployee(updatedOrder.id, employeeId);
+                }
+            }
+
             // Refetch to ensure we are in sync
             await fetchData();
 
         } catch (error) {
             console.error("Failed to update order:", error);
-            // Optionally revert local state or show error
             throw error;
         }
     };
