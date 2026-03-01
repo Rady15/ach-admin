@@ -9,11 +9,13 @@ const Login = () => {
     const { login } = useAuth();
     const { t } = useLanguage();
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        const result = login(email, password);
+        setError('');
+        const result = await login(email, password);
         if (!result.success) {
-            setError('البريد الإلكتروني أو كلمة المرور غير صحيحة');
+            const errorKey = result.errorKey || 'loginError';
+            setError(t(errorKey));
         }
     };
 
@@ -76,22 +78,6 @@ const Login = () => {
                         تسجيل الدخول
                     </button>
                 </form>
-
-                <div className="mt-8 pt-6 border-t border-glass-border">
-                    <div className="text-center space-y-2">
-                        <p className="text-xs text-slate-500">بيانات تجريبية:</p>
-                        <div className="flex justify-center gap-4 text-xs">
-                            <div className="bg-white/5 px-3 py-1 rounded cursor-pointer hover:bg-white/10" onClick={() => { setEmail('admin@example.com'); setPassword('123456'); }}>
-                                <span className="text-primary block font-bold">مشرف</span>
-                                <span className="text-slate-400">admin@example.com</span>
-                            </div>
-                            <div className="bg-white/5 px-3 py-1 rounded cursor-pointer hover:bg-white/10" onClick={() => { setEmail('khaled@example.com'); setPassword('123'); }}>
-                                <span className="text-success block font-bold">موظف</span>
-                                <span className="text-slate-400">khaled@example.com</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     );

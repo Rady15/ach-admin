@@ -50,9 +50,21 @@ export function AuthProvider({ children }) {
             return { success: true };
         } catch (error) {
             console.error("Login error:", error);
+            const status = error.response?.status;
+            let errorKey = 'loginError';
+            
+            if (status === 400) errorKey = 'error400';
+            else if (status === 401) errorKey = 'loginError';
+            else if (status === 403) errorKey = 'error403';
+            else if (status === 404) errorKey = 'error404';
+            else if (status === 500) errorKey = 'error500';
+            else if (status === 502) errorKey = 'error502';
+            else if (!error.response) errorKey = 'errorNetwork';
+            
             return {
                 success: false,
-                message: error.response?.data?.message || 'Invalid credentials or server error'
+                errorKey,
+                message: error.response?.data?.message || errorKey
             };
         }
     };

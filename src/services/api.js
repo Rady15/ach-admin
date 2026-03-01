@@ -10,6 +10,25 @@ const api = axios.create({
     },
 });
 
+api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        const status = error.response?.status;
+        let errorMessage = 'An error occurred';
+        
+        if (status === 400) errorMessage = 'error400';
+        else if (status === 401) errorMessage = 'error401';
+        else if (status === 403) errorMessage = 'error403';
+        else if (status === 404) errorMessage = 'error404';
+        else if (status === 500) errorMessage = 'error500';
+        else if (status === 502) errorMessage = 'error502';
+        else if (!error.response) errorMessage = 'errorNetwork';
+        
+        error.errorKey = errorMessage;
+        return Promise.reject(error);
+    }
+);
+
 // Add a request interceptor to include the auth token in requests
 api.interceptors.request.use(
     (config) => {

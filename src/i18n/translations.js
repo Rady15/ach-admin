@@ -364,6 +364,15 @@ export const translations = {
         "passwordMismatch": "كلمة المرور غير متطابقة",
         "success": "تم بنجاح",
         "error": "حدث خطأ",
+
+        // HTTP Errors
+        "error400": "طلب غير صالح، يرجى التحقق من البيانات",
+        "error401": "الجلسة منتهية، يرجى تسجيل الدخول снова",
+        "error403": "غير مصرح لك بالوصول لهذه الصفحة",
+        "error404": "الصفحة المطلوبة غير موجودة",
+        "error500": "خطأ في الخادم، يرجى المحاولة لاحقاً",
+        "error502": "الخادم غير متوفر مؤقتاً، يرجى المحاولة لاحقاً",
+        "errorNetwork": "خطأ في الاتصال، يرجى التحقق من الاتصال بالإنترنت",
     },
     en: {
         // Navigation & General
@@ -729,5 +738,14 @@ export const translations = {
         "passwordMismatch": "Passwords do not match",
         "success": "Success",
         "error": "Error occurred",
+
+        // HTTP Errors
+        "error400": "Invalid request, please check your data",
+        "error401": "Session expired, please login again",
+        "error403": "You are not authorized to access this page",
+        "error404": "The requested page not found",
+        "error500": "Server error, please try again later",
+        "error502": "Server temporarily unavailable, please try again later",
+        "errorNetwork": "Connection error, please check your internet",
     }
 };
