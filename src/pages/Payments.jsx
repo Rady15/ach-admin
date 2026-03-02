@@ -11,19 +11,29 @@ const Payments = () => {
     const { payments, fetchData } = useData();
     const [loading, setLoading] = useState(true);
     const [stats, setStats] = useState({
-        totalRevenue: 0,
+        totalPaidAmount: 0,
+        totalPendingAmount: 0,
         successfulPayments: 0,
         pendingPayments: 0,
-        failedPayments: 0
+        failedPayments: 0,
+        refundedPayments: 0
     });
 
     useEffect(() => {
         const fetchPaymentsData = async () => {
             try {
                 setLoading(true);
-                // Fetch payments stats
                 const statsRes = await paymentsAPI.getPaymentsStats();
-                setStats(statsRes.data);
+                if (statsRes?.data) {
+                    setStats({
+                        totalPaidAmount: statsRes.data.totalPaidAmount ?? 0,
+                        totalPendingAmount: statsRes.data.totalPendingAmount ?? 0,
+                        successfulPayments: statsRes.data.successfulPayments ?? 0,
+                        pendingPayments: statsRes.data.pendingPayments ?? 0,
+                        failedPayments: statsRes.data.failedPayments ?? 0,
+                        refundedPayments: statsRes.data.refundedPayments ?? 0
+                    });
+                }
             } catch (error) {
                 console.error("Failed to fetch payments data:", error);
             } finally {
@@ -49,7 +59,7 @@ const Payments = () => {
                     </div>
                     <div>
                         <p className={`text-sm font-medium mb-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{t('totalRevenue')}</p>
-                        <h3 className={`text-2xl font-bold font-numbers tracking-tight group-hover:text-success transition-colors ${isDark ? 'text-white' : 'text-slate-800'}`}>{loading ? '...' : stats.totalRevenue.toLocaleString()} {t('sar')}</h3>
+                        <h3 className={`text-2xl font-bold font-numbers tracking-tight group-hover:text-success transition-colors ${isDark ? 'text-white' : 'text-slate-800'}`}>{loading ? '...' : ((stats?.totalPaidAmount ?? 0)).toLocaleString()} {t('sar')}</h3>
                     </div>
                 </GlassPanel>
 
@@ -62,7 +72,7 @@ const Payments = () => {
                     </div>
                     <div>
                         <p className={`text-sm font-medium mb-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{t('successfulPayments')}</p>
-                        <h3 className={`text-2xl font-bold font-numbers tracking-tight group-hover:text-success transition-colors ${isDark ? 'text-white' : 'text-slate-800'}`}>{loading ? '...' : stats.successfulPayments}</h3>
+                        <h3 className={`text-2xl font-bold font-numbers tracking-tight group-hover:text-success transition-colors ${isDark ? 'text-white' : 'text-slate-800'}`}>{loading ? '...' : (stats?.successfulPayments ?? 0)}</h3>
                     </div>
                 </GlassPanel>
 
@@ -75,7 +85,7 @@ const Payments = () => {
                     </div>
                     <div>
                         <p className={`text-sm font-medium mb-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{t('pendingPayments')}</p>
-                        <h3 className={`text-2xl font-bold font-numbers tracking-tight group-hover:text-warning transition-colors ${isDark ? 'text-white' : 'text-slate-800'}`}>{loading ? '...' : stats.pendingPayments}</h3>
+                        <h3 className={`text-2xl font-bold font-numbers tracking-tight group-hover:text-warning transition-colors ${isDark ? 'text-white' : 'text-slate-800'}`}>{loading ? '...' : (stats?.pendingPayments ?? 0)}</h3>
                     </div>
                 </GlassPanel>
 
@@ -88,7 +98,7 @@ const Payments = () => {
                     </div>
                     <div>
                         <p className={`text-sm font-medium mb-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{t('failedPayments')}</p>
-                        <h3 className={`text-2xl font-bold font-numbers tracking-tight group-hover:text-danger transition-colors ${isDark ? 'text-white' : 'text-slate-800'}`}>{loading ? '...' : stats.failedPayments}</h3>
+                        <h3 className={`text-2xl font-bold font-numbers tracking-tight group-hover:text-danger transition-colors ${isDark ? 'text-white' : 'text-slate-800'}`}>{loading ? '...' : (stats?.failedPayments ?? 0)}</h3>
                     </div>
                 </GlassPanel>
             </div>
@@ -101,19 +111,19 @@ const Payments = () => {
                         <div className="flex items-center justify-between p-4 bg-success/10 rounded-xl">
                             <div>
                                 <p className={`text-sm ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>{t('paymentsThisMonth')}</p>
-                                <p className={`text-xl font-bold font-numbers ${isDark ? 'text-white' : 'text-slate-800'}`}>{loading ? '...' : stats.totalRevenue.toLocaleString()} {t('sar')}</p>
+                                <p className={`text-xl font-bold font-numbers ${isDark ? 'text-white' : 'text-slate-800'}`}>{loading ? '...' : (stats?.totalPaidAmount ?? 0).toLocaleString()} {t('sar')}</p>
                             </div>
                         </div>
                         <div className="flex items-center justify-between p-4 bg-info/10 rounded-xl">
                             <div>
                                 <p className={`text-sm ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>{t('successfulPayments')}</p>
-                                <p className={`text-xl font-bold font-numbers ${isDark ? 'text-white' : 'text-slate-800'}`}>{loading ? '...' : stats.successfulPayments}</p>
+                                <p className={`text-xl font-bold font-numbers ${isDark ? 'text-white' : 'text-slate-800'}`}>{loading ? '...' : (stats?.successfulPayments ?? 0)}</p>
                             </div>
                         </div>
                         <div className="flex items-center justify-between p-4 bg-warning/10 rounded-xl">
                             <div>
                                 <p className={`text-sm ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>{t('pendingPayments')}</p>
-                                <p className={`text-xl font-bold font-numbers ${isDark ? 'text-white' : 'text-slate-800'}`}>{loading ? '...' : stats.pendingPayments.toLocaleString()} {t('sar')}</p>
+                                <p className={`text-xl font-bold font-numbers ${isDark ? 'text-white' : 'text-slate-800'}`}>{loading ? '...' : (stats?.pendingPayments ?? 0).toLocaleString()} {t('sar')}</p>
                             </div>
                         </div>
                     </div>
@@ -128,28 +138,28 @@ const Payments = () => {
                                 <div>
                                     <div className="flex justify-between text-sm mb-1">
                                         <span className={isDark ? 'text-slate-400' : 'text-slate-500'}>{t('successful')}</span>
-                                        <span className="text-success font-numbers">{loading ? '...' : Math.round((stats.successfulPayments / (stats.successfulPayments + stats.pendingPayments + stats.failedPayments)) * 100)}%</span>
+                                        <span className="text-success font-numbers">{loading ? '...' : Math.round(((stats?.successfulPayments ?? 0) / ((stats?.successfulPayments ?? 0) + (stats?.pendingPayments ?? 0) + (stats?.failedPayments ?? 0))) * 100)}%</span>
                                     </div>
                                     <div className={`w-full rounded-full h-2 ${isDark ? 'bg-white/5' : 'bg-slate-100'}`}>
-                                        <div className="bg-success h-2 rounded-full" style={{ width: loading ? '0%' : `${Math.round((stats.successfulPayments / (stats.successfulPayments + stats.pendingPayments + stats.failedPayments)) * 100)}%` }}></div>
+                                        <div className="bg-success h-2 rounded-full" style={{ width: loading ? '0%' : `${Math.round(((stats?.successfulPayments ?? 0) / ((stats?.successfulPayments ?? 0) + (stats?.pendingPayments ?? 0) + (stats?.failedPayments ?? 0))) * 100)}%` }}></div>
                                     </div>
                                 </div>
                                 <div>
                                     <div className="flex justify-between text-sm mb-1">
                                         <span className={isDark ? 'text-slate-400' : 'text-slate-500'}>{t('pending')}</span>
-                                        <span className="text-warning font-numbers">{loading ? '...' : Math.round((stats.pendingPayments / (stats.successfulPayments + stats.pendingPayments + stats.failedPayments)) * 100)}%</span>
+                                        <span className="text-warning font-numbers">{loading ? '...' : Math.round(((stats?.pendingPayments ?? 0) / ((stats?.successfulPayments ?? 0) + (stats?.pendingPayments ?? 0) + (stats?.failedPayments ?? 0))) * 100)}%</span>
                                     </div>
                                     <div className={`w-full rounded-full h-2 ${isDark ? 'bg-white/5' : 'bg-slate-100'}`}>
-                                        <div className="bg-warning h-2 rounded-full" style={{ width: loading ? '0%' : `${Math.round((stats.pendingPayments / (stats.successfulPayments + stats.pendingPayments + stats.failedPayments)) * 100)}%` }}></div>
+                                        <div className="bg-warning h-2 rounded-full" style={{ width: loading ? '0%' : `${Math.round(((stats?.pendingPayments ?? 0) / ((stats?.successfulPayments ?? 0) + (stats?.pendingPayments ?? 0) + (stats?.failedPayments ?? 0))) * 100)}%` }}></div>
                                     </div>
                                 </div>
                                 <div>
                                     <div className="flex justify-between text-sm mb-1">
                                         <span className={isDark ? 'text-slate-400' : 'text-slate-500'}>{t('failed')}</span>
-                                        <span className="text-danger font-numbers">{loading ? '...' : Math.round((stats.failedPayments / (stats.successfulPayments + stats.pendingPayments + stats.failedPayments)) * 100)}%</span>
+                                        <span className="text-danger font-numbers">{loading ? '...' : Math.round(((stats?.failedPayments ?? 0) / ((stats?.successfulPayments ?? 0) + (stats?.pendingPayments ?? 0) + (stats?.failedPayments ?? 0))) * 100)}%</span>
                                     </div>
                                     <div className={`w-full rounded-full h-2 ${isDark ? 'bg-white/5' : 'bg-slate-100'}`}>
-                                        <div className="bg-danger h-2 rounded-full" style={{ width: loading ? '0%' : `${Math.round((stats.failedPayments / (stats.successfulPayments + stats.pendingPayments + stats.failedPayments)) * 100)}%` }}></div>
+                                        <div className="bg-danger h-2 rounded-full" style={{ width: loading ? '0%' : `${Math.round(((stats?.failedPayments ?? 0) / ((stats?.successfulPayments ?? 0) + (stats?.pendingPayments ?? 0) + (stats?.failedPayments ?? 0))) * 100)}%` }}></div>
                                     </div>
                                 </div>
                             </div>

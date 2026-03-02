@@ -91,32 +91,16 @@ export const servicesAPI = {
     },
 };
 
-// Payments API - Placeholder for future implementation
+// Payments API
 export const paymentsAPI = {
-    getAllPayments: () => {
-        console.warn('Payments API not yet implemented on backend');
-        return Promise.resolve({ data: [] });
-    },
-    getPaymentById: (id) => {
-        console.warn('Payments API not yet implemented on backend');
-        return Promise.resolve({ data: null });
-    },
-    createPayment: (paymentData) => {
-        console.warn('Payments API not yet implemented on backend');
-        return Promise.resolve({ data: null });
-    },
-    updatePayment: (id, paymentData) => {
-        console.warn('Payments API not yet implemented on backend');
-        return Promise.resolve({ data: null });
-    },
-    deletePayment: (id) => {
-        console.warn('Payments API not yet implemented on backend');
-        return Promise.resolve({ data: null });
-    },
-    getPaymentsStats: () => {
-        console.warn('Payments API not yet implemented on backend');
-        return Promise.resolve({ data: { totalRevenue: 0, successfulPayments: 0, pendingPayments: 0, failedPayments: 0 } });
-    },
+    getAllPayments: () => api.get('/Payment/all').catch(() => ({ data: [] })),
+    getPaymentById: (id) => api.get(`/Payment/${id}`),
+    createPayment: (paymentData) => api.post('/Payment', paymentData),
+    updatePayment: (id, paymentData) => api.put(`/Payment/${id}`, paymentData),
+    deletePayment: (id) => api.delete(`/Payment/${id}`),
+    getPaymentsStats: () => api.get('/Payment/statistics').catch(() => ({ 
+        data: { totalPaidAmount: 0, totalPendingAmount: 0, successfulPayments: 0, pendingPayments: 0, failedPayments: 0, refundedPayments: 0 } 
+    })),
 };
 
 // Reports API - Placeholder for future implementation
