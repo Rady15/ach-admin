@@ -28,11 +28,7 @@ const Login = () => {
             <div className="w-full max-w-4xl lg:max-w-6xl mx-4 lg:mx-8 flex flex-col lg:flex-row items-center lg:items-stretch gap-12 p-8 glass-panel rounded-3xl relative z-10">
                 {/* Logo Section - Left */}
                 <div className="flex flex-col items-center lg:items-start gap-6 text-center lg:text-left flex-shrink-0 lg:w-1/2">
-                    <img src="/logo2.svg" alt="ACH Logo" className="h-32 w-32 lg:h-48 lg:w-48 shadow-2xl rounded-3xl shadow-primary/25" />
-                    <div>
-                        <h1 className="text-3xl lg:text-5xl font-black text-white mb-4 leading-tight">{t('systemManagement')}</h1>
-                        <p className="text-slate-300 text-xl lg:text-2xl font-medium">تسجيل الدخول للمتابعة</p>
-                    </div>
+                    <img src="/ach.svg" alt="ACH Logo" className="h-40 w-120 lg:h-80 lg:w-120 " />
                 </div>
 
                 {/* Form Section - Right */}
