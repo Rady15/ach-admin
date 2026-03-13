@@ -18,7 +18,7 @@ const Dashboard = () => {
     const totalOrdersCount = orders.length;
     const completedCount = orders.filter(o => o.status?.toLowerCase() === 'completed').length;
     const paidCount = orders.filter(o => o.status?.toLowerCase() === 'paid').length;
-    const pendingCount = orders.filter(o => o.status?.toLowerCase() === 'pending').length;
+    const pendingCount = orders.filter(o => o.status?.toLowerCase() === 'underreview').length;
     const inProgressCount = orders.filter(o => o.status?.toLowerCase() === 'inprogress').length;
     const waitingForPaymentCount = orders.filter(o => o.status?.toLowerCase() === 'waitingforpayment').length;
     const cancelledCount = orders.filter(o => o.status?.toLowerCase() === 'cancelled').length;
@@ -70,7 +70,7 @@ const Dashboard = () => {
                     <div>
                         <p className={`text-sm font-medium mb-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{t('pendingOrders')}</p>
                         <h3 className={`text-2xl font-bold font-numbers tracking-tight group-hover:text-warning transition-colors ${isDark ? 'text-white' : 'text-slate-800'}`}>
-                            {orders.filter(o => o.status === 'pending').length}
+                            {pendingCount}
                         </h3>
                     </div>
                 </GlassPanel>

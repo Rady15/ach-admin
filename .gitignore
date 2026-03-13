@@ -1,2 +1,5 @@
 node_modules
 
+# Ignore Windows reserved device file accidentally created
+nul
+

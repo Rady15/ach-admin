@@ -16,9 +16,11 @@ export const translations = {
         "markAllRead": "تحديد الكل كمقروء",
         "viewAllNotifications": "عرض جميع الإشعارات",
         "justNow": "الآن",
+        "ago": "",
         "minutesAgo": "دقيقة مضت",
         "hoursAgo": "ساعة مضت",
         "daysAgo": "يوم مضت",
+        "clearAll": "مسح الكل",
         "adminPanel": "لوحة تحكم المشرف",
         "systemManagement": "نظام الإدارة",
         "close": "إغلاق",
@@ -63,7 +65,15 @@ export const translations = {
         "noAttachments": "لا توجد ملفات مرفقة",
         "onlyAdminCanAssign": "وظيفة خاصة بالمشرف",
         "confirmDelete": "هل أنت متأكد من الحذف؟",
-
+        // New fields for orders
+        "requestId": "معرف الطلب",
+        "userId": "معرف المستخدم",
+        "details": "التفاصيل",
+        "contactNumber": "رقم التواصل",
+        "fileUrls": "روابط الملفات",
+        "createdAt": "تاريخ الإنشاء",
+        "custom": "مخصص",
+        "noFiles": "لا توجد ملفات",
         // Services
         "commercial_register": "تجديد السجل التجاري",
         "trade_license": "إصدار رخصة تجارية",
@@ -175,6 +185,7 @@ export const translations = {
 
         // Status
         "status": "الحالة",
+        "underReview": "قيد الانظار",
         "pending": "قيد الانتظار",
         "inProgress": "قيد التنفيذ",
         "completed": "مكتمل",
@@ -395,9 +406,11 @@ export const translations = {
         "markAllRead": "Mark all as read",
         "viewAllNotifications": "View all notifications",
         "justNow": "Just now",
-        "minutesAgo": "minutes ago",
-        "hoursAgo": "hours ago",
-        "daysAgo": "days ago",
+        "ago": "ago",
+        "minutesAgo": "min",
+        "hoursAgo": "hr",
+        "daysAgo": "day",
+        "clearAll": "Clear All",
         "adminPanel": "Admin Panel",
         "systemManagement": "System Management",
         "close": "Close",
@@ -442,6 +455,16 @@ export const translations = {
         "noAttachments": "No attachments found",
         "onlyAdminCanAssign": "Admin only",
         "confirmDelete": "Are you sure you want to delete?",
+
+        // New fields for orders
+        "requestId": "Request ID",
+        "userId": "User ID",
+        "details": "Details",
+        "contactNumber": "Contact Number",
+        "fileUrls": "File URLs",
+        "createdAt": "Created At",
+        "custom": "Custom",
+        "noFiles": "No files",
 
         // Services
         "commercial_register": "Commercial Registration Renewal",
@@ -553,6 +576,7 @@ export const translations = {
 
         // Status
         "status": "Status",
+        "underReview": "Under Review",
         "pending": "Pending",
         "inProgress": "In Progress",
         "completed": "Completed",

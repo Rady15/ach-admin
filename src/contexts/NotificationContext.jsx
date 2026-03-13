@@ -1,94 +1,99 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { useAuth } from './AuthContext';
-import { notificationsAPI } from '../services/api';
+import { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import { notificationBus } from '../services/notificationBus';
 
 const NotificationContext = createContext();
 
+let notificationIdCounter = 0;
+
 export function NotificationProvider({ children }) {
-    const { user } = useAuth();
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
-    const [loading, setLoading] = useState(false);
 
-    const fetchNotifications = useCallback(async () => {
-        if (!user) return;
-        
-        setLoading(true);
-        try {
-            const [notifRes, countRes] = await Promise.allSettled([
-                notificationsAPI.getNotifications(),
-                notificationsAPI.getUnreadCount()
-            ]);
+    const addNotification = useCallback((notification) => {
+        const id = ++notificationIdCounter;
+        const newNotification = {
+            id,
+            type: notification.type || 'info',
+            title: notification.title || 'Notification',
+            message: notification.message || '',
+            createdAt: new Date().toISOString(),
+            isRead: false,
+            autoDismiss: notification.autoDismiss !== false,
+            duration: notification.duration || 5000,
+            ...notification
+        };
 
-            if (notifRes.status === 'fulfilled') {
-                const data = notifRes.value.data;
-                const notifs = Array.isArray(data) ? data : (data.notifications || data.data || []);
-                setNotifications(notifs);
-            }
+        setNotifications(prev => [newNotification, ...prev].slice(0, 50));
+        setUnreadCount(prev => prev + 1);
 
-            if (countRes.status === 'fulfilled') {
-                setUnreadCount(countRes.value.data?.count || countRes.value.data || 0);
-            } else if (notifRes.status === 'fulfilled') {
-                const notifs = Array.isArray(notifRes.value.data) ? notifRes.value.data : [];
-                setUnreadCount(notifs.filter(n => !n.isRead).length);
-            }
-        } catch (error) {
-            console.error('Failed to fetch notifications:', error);
-        } finally {
-            setLoading(false);
+        if (newNotification.autoDismiss) {
+            setTimeout(() => {
+                dismissNotification(id);
+            }, newNotification.duration);
         }
-    }, [user]);
 
-    const markAsRead = async (notificationId) => {
-        try {
-            await notificationsAPI.markAsRead(notificationId);
-            setNotifications(prev => 
-                prev.map(n => n.id === notificationId ? { ...n, isRead: true } : n)
-            );
-            setUnreadCount(prev => Math.max(0, prev - 1));
-        } catch (error) {
-            console.error('Failed to mark notification as read:', error);
-        }
-    };
+        return id;
+    }, []);
 
-    const markAllAsRead = async () => {
-        try {
-            await notificationsAPI.markAllAsRead();
-            setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
-            setUnreadCount(0);
-        } catch (error) {
-            console.error('Failed to mark all notifications as read:', error);
-        }
-    };
+    const dismissNotification = useCallback((id) => {
+        setNotifications(prev => prev.filter(n => n.id !== id));
+        setUnreadCount(prev => Math.max(0, prev - 1));
+    }, []);
 
-    const deleteNotification = async (notificationId) => {
-        try {
-            await notificationsAPI.deleteNotification(notificationId);
-            setNotifications(prev => prev.filter(n => n.id !== notificationId));
-            const notif = notifications.find(n => n.id === notificationId);
-            if (notif && !notif.isRead) {
-                setUnreadCount(prev => Math.max(0, prev - 1));
-            }
-        } catch (error) {
-            console.error('Failed to delete notification:', error);
-        }
-    };
+    const markAsRead = useCallback((id) => {
+        setNotifications(prev =>
+            prev.map(n => n.id === id ? { ...n, isRead: true } : n)
+        );
+        setUnreadCount(prev => Math.max(0, prev - 1));
+    }, []);
 
+    const markAllAsRead = useCallback(() => {
+        setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+        setUnreadCount(0);
+    }, []);
+
+    const clearAll = useCallback(() => {
+        setNotifications([]);
+        setUnreadCount(0);
+    }, []);
+
+    const success = useCallback((title, message, options = {}) => {
+        return addNotification({ type: 'success', title, message, ...options });
+    }, [addNotification]);
+
+    const error = useCallback((title, message, options = {}) => {
+        return addNotification({ type: 'error', title, message, ...options });
+    }, [addNotification]);
+
+    const warning = useCallback((title, message, options = {}) => {
+        return addNotification({ type: 'warning', title, message, ...options });
+    }, [addNotification]);
+
+    const info = useCallback((title, message, options = {}) => {
+        return addNotification({ type: 'info', title, message, ...options });
+    }, [addNotification]);
+
+    // Subscribe to notification bus for API-triggered notifications
     useEffect(() => {
-        fetchNotifications();
-        const interval = setInterval(fetchNotifications, 60000);
-        return () => clearInterval(interval);
-    }, [fetchNotifications]);
+        const unsubscribe = notificationBus.subscribe((notification) => {
+            addNotification(notification);
+        });
+        return unsubscribe;
+    }, [addNotification]);
 
     return (
         <NotificationContext.Provider value={{
             notifications,
             unreadCount,
-            loading,
-            fetchNotifications,
+            addNotification,
+            dismissNotification,
             markAsRead,
             markAllAsRead,
-            deleteNotification
+            clearAll,
+            success,
+            error,
+            warning,
+            info
         }}>
             {children}
         </NotificationContext.Provider>
@@ -96,5 +101,11 @@ export function NotificationProvider({ children }) {
 }
 
 export function useNotifications() {
-    return useContext(NotificationContext);
+    const context = useContext(NotificationContext);
+    if (!context) {
+        throw new Error('useNotifications must be used within a NotificationProvider');
+    }
+    return context;
 }
+
+export default NotificationContext;

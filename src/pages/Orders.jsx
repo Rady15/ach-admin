@@ -123,7 +123,7 @@ const Orders = () => {
                     </div>
                     <div>
                         <p className={`text-sm font-medium mb-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{t('pendingOrders')}</p>
-                        <h3 className={`text-2xl font-bold font-numbers tracking-tight group-hover:text-warning transition-colors ${isDark ? 'text-white' : 'text-slate-800'}`}>{orders.filter(o => o.status === 'pending').length}</h3>
+                        <h3 className={`text-2xl font-bold font-numbers tracking-tight group-hover:text-warning transition-colors ${isDark ? 'text-white' : 'text-slate-800'}`}>{orders.filter(o => o.status === 'underreview').length}</h3>
                     </div>
                 </GlassPanel>
 
@@ -152,6 +152,7 @@ const Orders = () => {
                             className={`px-4 py-2 border rounded-xl text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none ${isDark ? 'bg-background-dark border-glass-border text-white' : 'bg-white border-slate-200 text-slate-800'}`}
                         >
                             <option value="all">{t('allStatuses')}</option>
+                            <option value="underreview">{t('underReview')}</option>
                             <option value="pending">{t('pending')}</option>
                             <option value="inprogress">{t('inProgress')}</option>
                             <option value="waitingforpayment">{t('waitingForPayment')}</option>
@@ -195,21 +196,29 @@ const Orders = () => {
                         <thead>
                             <tr className={`text-right text-sm border-b ${isDark ? 'text-slate-400 border-glass-border' : 'text-slate-500 border-slate-200'}`}>
                                 <th className="pb-3 px-4 font-medium">#</th>
-                                <th className="pb-3 px-4 font-medium">{t('customer')}</th>
-                                <th className="pb-3 px-4 font-medium">{t('service')}</th>
+                                <th className="pb-3 px-4 font-medium">{t('requestId')}</th>
+                                <th className="pb-3 px-4 font-medium">{t('userId')}</th>
+                                <th className="pb-3 px-4 font-medium">{t('serviceType')}</th>
+                                <th className="pb-3 px-4 font-medium">{t('serviceName')}</th>
+                                <th className="pb-3 px-4 font-medium">{t('details')}</th>
+                                <th className="pb-3 px-4 font-medium">{t('contactNumber')}</th>
                                 <th className="pb-3 px-4 font-medium">{t('price')}</th>
                                 <th className="pb-3 px-4 font-medium">{t('assignedTo')}</th>
                                 <th className="pb-3 px-4 font-medium">{t('status')}</th>
-                                <th className="pb-3 px-4 font-medium">{t('date')}</th>
+                                <th className="pb-3 px-4 font-medium">{t('createdAt')}</th>
                                 <th className="pb-3 px-4 font-medium">{t('actions')}</th>
                             </tr>
                         </thead>
                         <tbody className={`text-sm ${isDark ? 'text-white' : 'text-slate-700'}`}>
                             {paginatedOrders.map((row, idx) => (
                                 <tr key={idx} className={`border-b transition-colors last:border-0 ${isDark ? 'border-glass-border hover:bg-white/5' : 'border-slate-100 hover:bg-slate-50'}`}>
+                                    <td className="py-3 px-4 font-numbers">{(currentPage - 1) * itemsPerPage + idx + 1}</td>
                                     <td className="py-3 px-4 font-numbers">{row.id}</td>
                                     <td className="py-3 px-4">{row.customer}</td>
                                     <td className="py-3 px-4">{t(row.service)}</td>
+                                    <td className="py-3 px-4">{row.serviceDetails?.serviceName || '---'}</td>
+                                    <td className="py-3 px-4">{row.serviceDetails?.details || '---'}</td>
+                                    <td className="py-3 px-4 font-numbers">{row.serviceDetails?.contactNumber || '---'}</td>
                                     <td className="py-3 px-4 font-numbers">{row.price} {t('sar')}</td>
                                     <td className="py-3 px-4">
                                         <span className={`text-xs ${row.assignedTo ? (isDark ? 'text-info' : 'text-info') : (isDark ? 'text-slate-500' : 'text-slate-400')}`}>

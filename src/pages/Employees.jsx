@@ -13,7 +13,7 @@ const Employees = () => {
     const { employees, orders, addEmployee, assignTask, fetchData } = useData();
 
     // Derive unassigned tasks from orders
-    const unassignedTasks = orders.filter(o => o.status === 'pending' && !o.assignedTo);
+    const unassignedTasks = orders.filter(o => o.status === 'underreview' && !o.assignedTo);
 
     // Modal states
     const [isViewModalOpen, setIsViewModalOpen] = useState(false);

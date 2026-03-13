@@ -8,30 +8,44 @@ const OrderModal = ({ onClose, order = null, mode = 'add' }) => {
     const { services, employees, addOrder, updateOrder } = useData(); // Get employees
     const { user } = useAuth(); // Get current user
 
+    const normalizeStatus = (status) => {
+        const s = String(status || '').toLowerCase().trim();
+        if (s === 'pending') return 'underreview';
+        return s;
+    };
+
     const [formData, setFormData] = useState({
-        customer: '',
-        service: '',
-        amount: '',
-        status: 'pending',
-        assignedTo: '',
-        description: '', // Added description field
-        date: new Date().toISOString().split('T')[0],
-        attachments: [],
-        serviceDetails: {}
+        requestId: '',
+        serviceType: 'Custom',
+        status: 'underreview',
+        createdAt: '',
+        assignedEmployeeUserId: null,
+        fileUrls: [],
+        userId: '',
+        serviceDetails: {
+            serviceName: '',
+            details: '',
+            contactNumber: ''
+        },
+        price: null
     });
 
     useEffect(() => {
         if (order) {
             setFormData({
-                customer: order.customer,
-                service: order.service,
-                amount: order.amount,
-                status: order.status,
-                assignedTo: order.assignedTo || '', // Load assigned employee
-                description: order.description || '', // Load description
-                date: order.date,
-                attachments: order.attachments || [],
-                serviceDetails: order.serviceDetails || {}
+                requestId: order.id,
+                serviceType: order.service,
+                status: normalizeStatus(order.status),
+                createdAt: order.date,
+                assignedEmployeeUserId: order.assignedTo,
+                fileUrls: order.attachments || [],
+                userId: order.customer,
+                serviceDetails: order.serviceDetails || {
+                    serviceName: '',
+                    details: '',
+                    contactNumber: ''
+                },
+                price: order.amount
             });
         }
     }, [order]);
@@ -67,8 +81,13 @@ const OrderModal = ({ onClose, order = null, mode = 'add' }) => {
         if (mode === 'view') return;
 
         const orderData = {
-            ...formData,
-            amount: Number(formData.amount)
+            requestId: formData.requestId,
+            serviceType: formData.serviceType,
+            status: formData.status,
+            assignedEmployeeUserId: formData.assignedEmployeeUserId,
+            userId: formData.userId,
+            serviceDetails: formData.serviceDetails,
+            price: Number(formData.price)
         };
 
         if (mode === 'edit') {
@@ -126,36 +145,83 @@ const OrderModal = ({ onClose, order = null, mode = 'add' }) => {
                             <h4 className="text-primary font-bold text-sm uppercase tracking-wider">{t('orderDetails') || 'تفاصيل الطلب'}</h4>
 
                             <div>
-                                <label className="block text-slate-300 text-sm mb-2">{t('customerName')}</label>
+                                <label className="block text-slate-300 text-sm mb-2">{t('requestId')}</label>
                                 <input
                                     type="text"
-                                    required
-                                    disabled={isView || mode === 'edit'} // Usually customer name isn't changed often, but editable is fine. Let's keep strict for now.
-                                    className="w-full px-4 py-3 bg-white/5 border border-glass-border rounded-xl text-white text-sm focus:outline-none focus:border-primary transition-all disabled:opacity-50"
-                                    value={formData.customer}
-                                    onChange={e => setFormData({ ...formData, customer: e.target.value })}
+                                    disabled
+                                    className="w-full px-4 py-3 bg-white/5 border border-glass-border rounded-xl text-white text-sm opacity-50"
+                                    value={formData.requestId}
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-slate-300 text-sm mb-2">{t('service')}</label>
-                                {isView || mode === 'edit' ? (
-                                    <div className="w-full px-4 py-3 bg-white/5 border border-glass-border rounded-xl text-white text-sm opacity-80">
-                                        {t(formData.service) || formData.service}
-                                    </div>
-                                ) : (
-                                    <select
-                                        required
-                                        className="w-full px-4 py-3 bg-white/5 border border-glass-border rounded-xl text-white text-sm focus:outline-none focus:border-primary transition-all [&>option]:bg-[#1e293b]"
-                                        value={formData.service}
-                                        onChange={handleServiceChange}
-                                    >
-                                        <option value="">{t('selectService')}</option>
-                                        {services.map(service => (
-                                            <option key={service.id} value={service.name}>{t(service.name)}</option>
-                                        ))}
-                                    </select>
-                                )}
+                                <label className="block text-slate-300 text-sm mb-2">{t('userId')}</label>
+                                <input
+                                    type="text"
+                                    required
+                                    disabled={isView || mode === 'edit'}
+                                    className="w-full px-4 py-3 bg-white/5 border border-glass-border rounded-xl text-white text-sm focus:outline-none focus:border-primary transition-all disabled:opacity-50"
+                                    value={formData.userId}
+                                    onChange={e => setFormData({ ...formData, userId: e.target.value })}
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-slate-300 text-sm mb-2">{t('serviceType')}</label>
+                                <select
+                                    required
+                                    disabled={isView || mode === 'edit'}
+                                    className="w-full px-4 py-3 bg-white/5 border border-glass-border rounded-xl text-white text-sm focus:outline-none focus:border-primary transition-all [&>option]:bg-[#1e293b]"
+                                    value={formData.serviceType}
+                                    onChange={e => setFormData({ ...formData, serviceType: e.target.value })}
+                                >
+                                    <option value="Custom">{t('custom')}</option>
+                                    {/* Add other service types if needed */}
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className="block text-slate-300 text-sm mb-2">{t('serviceName')}</label>
+                                <input
+                                    type="text"
+                                    required
+                                    disabled={isView || mode === 'edit'}
+                                    className="w-full px-4 py-3 bg-white/5 border border-glass-border rounded-xl text-white text-sm focus:outline-none focus:border-primary transition-all disabled:opacity-50"
+                                    value={formData.serviceDetails.serviceName}
+                                    onChange={e => setFormData({ ...formData, serviceDetails: { ...formData.serviceDetails, serviceName: e.target.value } })}
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-slate-300 text-sm mb-2">{t('details')}</label>
+                                <textarea
+                                    disabled={isView || (mode === 'edit' && user?.role !== 'admin')}
+                                    className="w-full px-4 py-3 bg-white/5 border border-glass-border rounded-xl text-white text-sm focus:outline-none focus:border-primary transition-all h-20 resize-none disabled:opacity-50"
+                                    value={formData.serviceDetails.details}
+                                    onChange={e => setFormData({ ...formData, serviceDetails: { ...formData.serviceDetails, details: e.target.value } })}
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-slate-300 text-sm mb-2">{t('contactNumber')}</label>
+                                <input
+                                    type="text"
+                                    required
+                                    disabled={isView || mode === 'edit'}
+                                    className="w-full px-4 py-3 bg-white/5 border border-glass-border rounded-xl text-white text-sm focus:outline-none focus:border-primary transition-all disabled:opacity-50"
+                                    value={formData.serviceDetails.contactNumber}
+                                    onChange={e => setFormData({ ...formData, serviceDetails: { ...formData.serviceDetails, contactNumber: e.target.value } })}
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-slate-300 text-sm mb-2">{t('description')}</label>
+                                <textarea
+                                    disabled={isView || (mode === 'edit' && user?.role !== 'admin')}
+                                    className="w-full px-4 py-3 bg-white/5 border border-glass-border rounded-xl text-white text-sm focus:outline-none focus:border-primary transition-all h-24 resize-none disabled:opacity-50"
+                                    value={formData.description}
+                                    onChange={e => setFormData({ ...formData, description: e.target.value })}
+                                />
                             </div>
 
                             <div>
@@ -163,11 +229,10 @@ const OrderModal = ({ onClose, order = null, mode = 'add' }) => {
                                 <div className="relative">
                                     <input
                                         type="number"
-                                        required
                                         disabled={isView}
                                         className="w-full px-4 py-3 bg-white/5 border border-glass-border rounded-xl text-white text-sm focus:outline-none focus:border-primary transition-all font-numbers disabled:opacity-50"
-                                        value={formData.amount}
-                                        onChange={e => setFormData({ ...formData, amount: e.target.value })}
+                                        value={formData.price || ''}
+                                        onChange={e => setFormData({ ...formData, price: e.target.value })}
                                     />
                                     <span className="absolute left-4 top-3 text-slate-400 text-sm">SAR</span>
                                 </div>
@@ -187,6 +252,7 @@ const OrderModal = ({ onClose, order = null, mode = 'add' }) => {
                                     value={formData.status}
                                     onChange={e => setFormData({ ...formData, status: e.target.value })}
                                 >
+                                    <option value="underreview">{t('underReview')}</option>
                                     <option value="pending">{t('pending')}</option>
                                     <option value="inprogress">{t('inProgress')}</option>
                                     <option value="waitingforpayment">{t('waitingForPayment')}</option>
@@ -201,8 +267,8 @@ const OrderModal = ({ onClose, order = null, mode = 'add' }) => {
                                 <label className="block text-slate-300 text-sm mb-2">{t('assignedTo') || 'مسند إلى'}</label>
                                 {isView ? (
                                     <div className="w-full px-4 py-3 bg-white/5 border border-glass-border rounded-xl text-white text-sm opacity-80">
-                                        {formData.assignedTo 
-                                            ? (employees.find(emp => emp.id === formData.assignedTo || emp.userName === formData.assignedTo)?.name || formData.assignedTo)
+                                        {formData.assignedEmployeeUserId 
+                                            ? (employees.find(emp => emp.id === formData.assignedEmployeeUserId || emp.userName === formData.assignedEmployeeUserId)?.name || formData.assignedEmployeeUserId)
                                             : (t('unassigned') || 'غير مسند')
                                         }
                                     </div>
@@ -210,8 +276,8 @@ const OrderModal = ({ onClose, order = null, mode = 'add' }) => {
                                     <select
                                         disabled={!isAdmin}
                                         className="w-full px-4 py-3 bg-white/5 border border-glass-border rounded-xl text-white text-sm focus:outline-none focus:border-primary transition-all [&>option]:bg-[#1e293b] disabled:opacity-50 disabled:cursor-not-allowed"
-                                        value={formData.assignedTo || ''}
-                                        onChange={e => setFormData({ ...formData, assignedTo: e.target.value })}
+                                        value={formData.assignedEmployeeUserId || ''}
+                                        onChange={e => setFormData({ ...formData, assignedEmployeeUserId: e.target.value })}
                                     >
                                         <option value="">{t('unassigned') || 'غير مسند'}</option>
                                         {employees.map(emp => (
@@ -222,16 +288,16 @@ const OrderModal = ({ onClose, order = null, mode = 'add' }) => {
                                 {!isAdmin && mode !== 'add' && <p className="text-xs text-slate-500 mt-1">* {t('onlyAdminCanAssign') || 'فقط المشرف يمكنه تعيين الموظفين'}</p>}
                             </div>
 
-                            {/* Attachments - Read Only for now as they come from user */}
+                            {/* File URLs - Read Only */}
                             <div>
-                                <label className="block text-slate-300 text-sm mb-2">{t('attachments') || 'المرفقات'}</label>
+                                <label className="block text-slate-300 text-sm mb-2">{t('fileUrls') || 'روابط الملفات'}</label>
                                 <div className="space-y-2">
-                                    {formData.attachments.length === 0 ? (
+                                    {formData.fileUrls.length === 0 ? (
                                         <div className="p-3 rounded-xl border border-dashed border-glass-border text-center text-slate-500 text-sm">
-                                            {t('noAttachments') || 'لا توجد مرفقات'}
+                                            {t('noFiles') || 'لا توجد ملفات'}
                                         </div>
                                     ) : (
-                                        formData.attachments.map((file, idx) => (
+                                        formData.fileUrls.map((file, idx) => (
                                             <div key={idx} className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-glass-border group hover:bg-white/10 transition-colors">
                                                 <div className="flex items-center gap-3 overflow-hidden">
                                                     <div className="size-8 rounded-lg bg-primary/20 flex items-center justify-center text-primary shrink-0">
@@ -260,18 +326,6 @@ const OrderModal = ({ onClose, order = null, mode = 'add' }) => {
 
                     {/* Dynamic Service Details */}
                     {isView && renderServiceDetails()}
-
-                    {/* Description - Full Width */}
-                    <div>
-                        <label className="block text-slate-300 text-sm mb-2">{t('orderDescription') || 'وصف الطلب'}</label>
-                        <textarea
-                            disabled={isView}
-                            className="w-full px-4 py-3 bg-white/5 border border-glass-border rounded-xl text-white text-sm focus:outline-none focus:border-primary transition-all h-24 resize-none disabled:opacity-50"
-                            placeholder={t('enterOrderDescription') || 'أدخل تفاصيل الطلب...'}
-                            value={formData.description}
-                            onChange={e => setFormData({ ...formData, description: e.target.value })}
-                        ></textarea>
-                    </div>
 
                     <div className="pt-6 mt-6 border-t border-glass-border flex gap-3">
                         <button

@@ -9,11 +9,24 @@ export function DataProvider({ children }) {
     const { user } = useAuth();
     const { t } = useLanguage();
 
+    const normalizeStatus = (status) => {
+        const s = String(status || '').toLowerCase().trim();
+        if (s === 'pending') return 'underreview';
+        return s;
+    };
+
+    const toApiStatus = (status) => {
+        const s = String(status || '').toLowerCase().trim();
+        if (s === 'underreview') return 'pending';
+        return s;
+    };
+
     const getStatusColor = (status) => {
-        switch (status?.toLowerCase()) {
+        switch (normalizeStatus(status)) {
             case 'completed': return 'success';
             case 'paid': return 'success';
             case 'inprogress': return 'info';
+            case 'underreview':
             case 'pending': return 'warning';
             case 'cancelled': return 'danger';
             case 'waitingforpayment': return 'purple';
@@ -48,11 +61,11 @@ export function DataProvider({ children }) {
             const fetchPromises = [
                 isAdmin ? authAPI.getAllUsers() : Promise.resolve({ data: [] }),
                 isEmployee ? servicesAPI.getMyRequests() : servicesAPI.getAllRequests(),
-                paymentsAPI.getAllPayments(),
+                paymentsAPI.getPaymentsStats(),
                 pricingAPI.getAllServices()
             ];
 
-            const [usersRes, requestRes, paymentsRes, servicesRes] = await Promise.allSettled(fetchPromises);
+            const [usersRes, requestRes, paymentsStatsRes, servicesRes] = await Promise.allSettled(fetchPromises);
 
             if (usersRes.status === 'fulfilled') {
                 // Handle different response structures (array or wrapped in data property)
@@ -118,30 +131,33 @@ export function DataProvider({ children }) {
             }
 
             if (requestRes.status === 'fulfilled') {
-                const mappedOrders = requestRes.value.data.map(order => ({
-                    id: order.requestId,
-                    customer: order.userId,
-                    service: order.serviceType,
-                    amount: order.price || 0,
-                    price: order.price !== null ? order.price : (t ? t('notSet') : 'قيد التقدير'),
-                    status: String(order.status).toLowerCase().trim(),
-                    date: new Date(order.createdAt).toLocaleDateString('en-GB'),
-                    attachments: order.fileUrls ? order.fileUrls.map(url => ({
-                        name: url.split('/').pop(),
-                        url: `https://ach.runasp.net${url}`,
-                        size: '---'
-                    })) : [],
-                    serviceDetails: order.serviceDetails || {},
-                    assignedTo: order.assignedEmployeeUserId || order.employeeId || null,
-                    statusColor: getStatusColor(String(order.status).toLowerCase())
-                }));
+                const mappedOrders = requestRes.value.data.map(order => {
+                    const normalizedStatus = normalizeStatus(order.status);
+                    return {
+                        id: order.requestId,
+                        customer: order.userId,
+                        service: order.serviceType,
+                        amount: order.price || 0,
+                        price: order.price !== null ? order.price : (t ? t('notSet') : 'قيد التقدير'),
+                        status: normalizedStatus,
+                        date: new Date(order.createdAt).toLocaleDateString('en-GB'),
+                        attachments: order.fileUrls ? order.fileUrls.map(url => ({
+                            name: url.split('/').pop(),
+                            url: `https://ach.runasp.net${url}`,
+                            size: '---'
+                        })) : [],
+                        serviceDetails: order.serviceDetails || {},
+                        assignedTo: order.assignedEmployeeUserId || order.employeeId || null,
+                        statusColor: getStatusColor(normalizedStatus)
+                    };
+                });
                 setOrders(mappedOrders);
             }
 
-            if (paymentsRes.status === 'fulfilled') {
-                setPayments(paymentsRes.value.data);
+            if (paymentsStatsRes.status === 'fulfilled') {
+                setPayments(paymentsStatsRes.value.data || {});
             } else {
-                console.error("Failed to fetch payments:", paymentsRes.reason);
+                console.error("Failed to fetch payments stats:", paymentsStatsRes.reason);
             }
 
             if (servicesRes.status === 'fulfilled') {
@@ -202,7 +218,7 @@ export function DataProvider({ children }) {
         const newOrder = {
             id: `#ORD-${String(orders.length + 1).padStart(3, '0')}`,
             date: new Date().toISOString().split('T')[0],
-            status: 'pending',
+            status: 'underreview',
             paymentStatus: 'unpaid',
             assignedTo: '',
             description: '',
@@ -213,24 +229,34 @@ export function DataProvider({ children }) {
 
     const updateOrder = async (updatedOrder) => {
         try {
-            const oldOrder = orders.find(o => o.id === updatedOrder.id);
+            const oldOrder = orders.find(o => o.id === updatedOrder.requestId || o.id === updatedOrder.id);
             if (!oldOrder) return;
 
             // Handle Price Change
-            if (updatedOrder.amount !== oldOrder.amount) {
-                await servicesAPI.setPrice(updatedOrder.id, updatedOrder.amount);
+            if (updatedOrder.price !== oldOrder.amount) {
+                await servicesAPI.setPrice(updatedOrder.requestId || updatedOrder.id, updatedOrder.price);
             }
 
             // Handle Status Change
             if (updatedOrder.status !== oldOrder.status) {
-                await servicesAPI.updateRequestStatus(updatedOrder.id, updatedOrder.status);
+                await servicesAPI.updateRequestStatus(
+                    updatedOrder.requestId || updatedOrder.id,
+                    toApiStatus(updatedOrder.status)
+                );
+            }
+
+            // Handle Description (details) Change via add-description endpoint
+            const oldDetails = oldOrder.serviceDetails?.details || '';
+            const newDetails = updatedOrder.serviceDetails?.details || '';
+            if (newDetails !== oldDetails) {
+                await servicesAPI.addDescription(updatedOrder.requestId || updatedOrder.id, newDetails);
             }
 
             // Handle Assignment Change
-            if (updatedOrder.assignedTo !== oldOrder.assignedTo) {
-                const employeeId = updatedOrder.assignedTo || null;
+            if (updatedOrder.assignedEmployeeUserId !== oldOrder.assignedTo) {
+                const employeeId = updatedOrder.assignedEmployeeUserId || null;
                 if (employeeId) {
-                    await servicesAPI.assignRequestToEmployee(updatedOrder.id, employeeId);
+                    await servicesAPI.assignRequestToEmployee(updatedOrder.requestId || updatedOrder.id, employeeId);
                 }
             }
 
@@ -245,8 +271,8 @@ export function DataProvider({ children }) {
 
     const updateOrderStatus = async (id, status) => {
         try {
-            await servicesAPI.updateRequestStatus(id, status);
-            setOrders(orders.map(order => order.id === id ? { ...order, status } : order));
+            await servicesAPI.updateRequestStatus(id, toApiStatus(status));
+            setOrders(orders.map(order => order.id === id ? { ...order, status: normalizeStatus(status) } : order));
         } catch (error) {
             console.error("Failed to update order status:", error);
             throw error;
