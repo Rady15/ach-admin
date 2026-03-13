@@ -9,248 +9,223 @@ const Dashboard = () => {
     const { t } = useLanguage();
     const { isDark } = useTheme();
     const navigate = useNavigate();
-    const { stats, orders, employees } = useData();
+    const { stats, orders, employees, customers, payments } = useData();
 
-    // Use recent 3 orders for display
-    const recentOrders = orders.slice(0, 3);
-
-    // Calculate order status counts for the chart
-    const totalOrdersCount = orders.length;
-    const completedCount = orders.filter(o => o.status?.toLowerCase() === 'completed').length;
-    const paidCount = orders.filter(o => o.status?.toLowerCase() === 'paid').length;
-    const pendingCount = orders.filter(o => o.status?.toLowerCase() === 'underreview').length;
-    const inProgressCount = orders.filter(o => o.status?.toLowerCase() === 'inprogress').length;
-    const waitingForPaymentCount = orders.filter(o => o.status?.toLowerCase() === 'waitingforpayment').length;
-    const cancelledCount = orders.filter(o => o.status?.toLowerCase() === 'cancelled').length;
-
-    const getEmployeeName = (assignedTo) => {
-        if (!assignedTo) return null;
-        const employee = employees.find(emp => emp.id === assignedTo || emp.userName === assignedTo);
-        return employee ? employee.name : null;
+    // Status counts
+    const statusCounts = {
+        total: orders.length,
+        completed: orders.filter(o => o.status === 'completed').length,
+        paid: orders.filter(o => o.status === 'paid').length,
+        pending: orders.filter(o => o.status === 'underreview').length,
+        inProgress: orders.filter(o => o.status === 'inprogress').length,
+        waitingPayment: orders.filter(o => o.status === 'waitingforpayment').length,
+        cancelled: orders.filter(o => o.status === 'cancelled').length
     };
 
+    // Quick stats
+    const quickStats = [
+        { label: t('totalOrders') || 'إجمالي الطلبات', value: statusCounts.total, icon: 'receipt_long', color: 'primary' },
+        { label: t('totalCustomers') || 'إجمالي العملاء', value: customers.length, icon: 'group', color: 'info' },
+        { label: t('totalRevenue') || 'إجمالي الإيرادات', value: stats.totalRevenue?.toLocaleString() || '0', icon: 'payments', color: 'success', suffix: t('sar') || 'ر.س' },
+        { label: t('employees') || 'الموظفين', value: employees.length, icon: 'badge', color: 'warning' }
+    ];
+
+    // Recent orders
+    const recentOrders = orders.slice(0, 5).map(order => ({
+        id: order.id,
+        customer: order.customer,
+        service: t(order.service) || order.service,
+        price: order.price,
+        status: order.status,
+        statusColor: order.statusColor || 'info'
+    }));
+
+    const getStatusStyles = (status) => ({
+        completed: 'bg-success/10 text-success',
+        paid: 'bg-success/10 text-success', 
+        pending: 'bg-warning/10 text-warning',
+        'inprogress': 'bg-info/10 text-info',
+        waitingforpayment: 'bg-purple-500/10 text-purple-500',
+        cancelled: 'bg-danger/10 text-danger'
+    }[status] || 'bg-slate-500/10 text-slate-500');
+
     return (
-        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-300">
-            {/* Stats Grid */}
+        <div className="space-y-8 p-6">
+            {/* Quick Stats Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {/* Stat Card 1 */}
-                <GlassPanel className="p-6 flex flex-col gap-4 group" hoverEffect>
-                    <div className="flex justify-between items-start">
-                        <div className="p-3 rounded-lg bg-primary/20 text-primary">
-                            <span className="material-symbols-outlined">receipt_long</span>
+                {quickStats.map((stat, idx) => (
+                    <GlassPanel key={idx} className="p-6 group hoverEffect" hoverEffect>
+                        <div className="flex items-start justify-between">
+                            <div className={`p-3 rounded-xl bg-${stat.color}/10 text-${stat.color} flex-shrink-0`}>
+                                <span className="material-symbols-outlined text-lg">{stat.icon}</span>
+                            </div>
+                            <div className="flex-1 ml-4 text-right">
+                                <p className={`text-sm font-medium opacity-75 mb-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                                    {stat.label}
+                                </p>
+                                <h3 className={`text-2xl lg:text-3xl font-bold font-numbers ${isDark ? 'text-white' : 'text-slate-900'} group-hover:text-${stat.color}`}>
+                                    {stat.value} {stat.suffix || ''}
+                                </h3>
+                            </div>
                         </div>
-                        {/* <span className="text-xs font-medium px-2 py-1 rounded-full bg-green-500/10 text-green-400 border border-green-500/20 font-numbers">+15%</span> */}
-                    </div>
-                    <div>
-                        <p className={`text-sm font-medium mb-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{t('totalOrders')}</p>
-                        <h3 className={`text-2xl font-bold font-numbers tracking-tight group-hover:text-primary-glow transition-colors ${isDark ? 'text-white' : 'text-slate-800'}`}>{stats.totalOrders}</h3>
-                    </div>
-                </GlassPanel>
-
-                {/* Stat Card 2 */}
-                <GlassPanel className="p-6 flex flex-col gap-4 group" hoverEffect>
-                    <div className="flex justify-between items-start">
-                        <div className="p-3 rounded-lg bg-success/20 text-success">
-                            <span className="material-symbols-outlined">check_circle</span>
-                        </div>
-                    </div>
-                    <div>
-                        <p className={`text-sm font-medium mb-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{t('activeOrders')}</p>
-                        <h3 className={`text-2xl font-bold font-numbers tracking-tight group-hover:text-success transition-colors ${isDark ? 'text-white' : 'text-slate-800'}`}>{stats.activeOrders}</h3>
-                    </div>
-                </GlassPanel>
-
-                {/* Stat Card 3 */}
-                <GlassPanel className="p-6 flex flex-col gap-4 group" hoverEffect>
-                    <div className="flex justify-between items-start">
-                        <div className="p-3 rounded-lg bg-warning/20 text-warning">
-                            <span className="material-symbols-outlined">pending_actions</span>
-                        </div>
-                    </div>
-                    <div>
-                        <p className={`text-sm font-medium mb-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{t('pendingOrders')}</p>
-                        <h3 className={`text-2xl font-bold font-numbers tracking-tight group-hover:text-warning transition-colors ${isDark ? 'text-white' : 'text-slate-800'}`}>
-                            {pendingCount}
-                        </h3>
-                    </div>
-                </GlassPanel>
-
-                {/* Stat Card 4 */}
-                <GlassPanel className="p-6 flex flex-col gap-4 group" hoverEffect>
-                    <div className="flex justify-between items-start">
-                        <div className="p-3 rounded-lg bg-info/20 text-info">
-                            <span className="material-symbols-outlined">payments</span>
-                        </div>
-                    </div>
-                    <div>
-                        <p className={`text-sm font-medium mb-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{t('totalRevenue')}</p>
-                        <h3 className={`text-2xl font-bold font-numbers tracking-tight group-hover:text-info transition-colors ${isDark ? 'text-white' : 'text-slate-800'}`}>{stats.totalRevenue.toLocaleString()} {t('sar')}</h3>
-                    </div>
-                </GlassPanel>
+                    </GlassPanel>
+                ))}
             </div>
 
-            {/* Orders Overview Section */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Recent Orders Chart */}
-                <GlassPanel className="lg:col-span-2 p-6 relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 blur-3xl rounded-full"></div>
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 relative z-10">
-                        <div>
-                            <h3 className={`text-lg font-bold mb-1 ${isDark ? 'text-white' : 'text-slate-800'}`}>{t('ordersByStatus')}</h3>
-                            <p className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{t('recentOrders')}</p>
-                        </div>
+            {/* Status Overview */}
+            <GlassPanel className="p-8 lg:p-12">
+                <div className="flex items-center justify-between mb-8">
+                    <div>
+                        <h3 className="text-2xl font-bold text-white">{t('status') || 'الحالة'}</h3>
+                        <p className={`text-sm opacity-75 mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                            {t('orderStatusOverview') || 'نظرة عامة على حالة الطلبات'}
+                        </p>
                     </div>
-                    {/* Order Status Distribution Bar Chart */}
-                    <div className="w-full h-[300px] relative z-10 flex flex-col justify-end gap-4 px-4">
-                        <div className="flex items-end justify-around h-[250px] gap-2">
-                            <div className="flex flex-col items-center gap-2 flex-1">
-                                <span className={`text-sm font-bold font-numbers ${isDark ? 'text-white' : 'text-slate-800'}`}>{completedCount}</span>
-                                <div 
-                                    className="w-full bg-success rounded-t-xl transition-all duration-500 shadow-[0_0_15px_rgba(16,185,129,0.4)]"
-                                    style={{ height: totalOrdersCount > 0 ? `${(completedCount / totalOrdersCount) * 200}px` : '0px', minHeight: completedCount > 0 ? '4px' : '0px' }}
-                                ></div>
-                                <span className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{t('completed')}</span>
-                            </div>
-                            <div className="flex flex-col items-center gap-2 flex-1">
-                                <span className={`text-sm font-bold font-numbers ${isDark ? 'text-white' : 'text-slate-800'}`}>{paidCount}</span>
-                                <div 
-                                    className="w-full bg-success rounded-t-xl transition-all duration-500 shadow-[0_0_15px_rgba(16,185,129,0.4)]"
-                                    style={{ height: totalOrdersCount > 0 ? `${(paidCount / totalOrdersCount) * 200}px` : '0px', minHeight: paidCount > 0 ? '4px' : '0px' }}
-                                ></div>
-                                <span className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{t('paid')}</span>
-                            </div>
-                            <div className="flex flex-col items-center gap-2 flex-1">
-                                <span className={`text-sm font-bold font-numbers ${isDark ? 'text-white' : 'text-slate-800'}`}>{pendingCount}</span>
-                                <div 
-                                    className="w-full bg-warning rounded-t-xl transition-all duration-500 shadow-[0_0_15px_rgba(245,158,11,0.4)]"
-                                    style={{ height: totalOrdersCount > 0 ? `${(pendingCount / totalOrdersCount) * 200}px` : '0px', minHeight: pendingCount > 0 ? '4px' : '0px' }}
-                                ></div>
-                                <span className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{t('pending')}</span>
-                            </div>
-                            <div className="flex flex-col items-center gap-2 flex-1">
-                                <span className={`text-sm font-bold font-numbers ${isDark ? 'text-white' : 'text-slate-800'}`}>{inProgressCount}</span>
-                                <div 
-                                    className="w-full bg-info rounded-t-xl transition-all duration-500 shadow-[0_0_15px_rgba(59,130,246,0.4)]"
-                                    style={{ height: totalOrdersCount > 0 ? `${(inProgressCount / totalOrdersCount) * 200}px` : '0px', minHeight: inProgressCount > 0 ? '4px' : '0px' }}
-                                ></div>
-                                <span className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{t('inProgress')}</span>
-                            </div>
-                            <div className="flex flex-col items-center gap-2 flex-1">
-                                <span className={`text-sm font-bold font-numbers ${isDark ? 'text-white' : 'text-slate-800'}`}>{waitingForPaymentCount}</span>
-                                <div 
-                                    className="w-full bg-purple-500 rounded-t-xl transition-all duration-500 shadow-[0_0_15px_rgba(168,85,247,0.4)]"
-                                    style={{ height: totalOrdersCount > 0 ? `${(waitingForPaymentCount / totalOrdersCount) * 200}px` : '0px', minHeight: waitingForPaymentCount > 0 ? '4px' : '0px' }}
-                                ></div>
-                                <span className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{t('waitingForPayment')}</span>
-                            </div>
-                        </div>
+                    <div className="flex items-center gap-2 text-sm opacity-75">
+                        <span className={`px-2 py-1 rounded-full bg-primary/20 text-primary text-xs font-medium`}>
+                            {statusCounts.total}
+                        </span>
+                        <span>{t('total') || 'إجمالي'}</span>
                     </div>
-                </GlassPanel>
-
-                {/* Order Status Summary */}
-                <GlassPanel className="p-6 flex flex-col gap-6">
-                    <h3 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-slate-800'}`}>{t('status')}</h3>
-                    <div className="flex-1 flex items-center justify-center relative">
-                        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                            <span className={`text-3xl font-bold font-numbers ${isDark ? 'text-white' : 'text-slate-800'}`}>{totalOrdersCount}</span>
-                            <span className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{t('totalOrders')}</span>
-                        </div>
-                    </div>
-                    <div className="flex flex-col gap-2">
-                        <div className={`flex items-center justify-between p-2 rounded-lg transition-colors ${isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50'}`}>
-                            <div className="flex items-center gap-2">
-                                <span className="size-3 rounded-full bg-success shadow-[0_0_8px_rgba(16,185,129,0.6)]"></span>
-                                <span className={`text-sm ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>{t('completed')}</span>
-                            </div>
-                            <span className={`text-sm font-bold font-numbers ${isDark ? 'text-white' : 'text-slate-800'}`}>{completedCount}</span>
-                        </div>
-                        <div className={`flex items-center justify-between p-2 rounded-lg transition-colors ${isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50'}`}>
-                            <div className="flex items-center gap-2">
-                                <span className="size-3 rounded-full bg-success shadow-[0_0_8px_rgba(16,185,129,0.6)]"></span>
-                                <span className={`text-sm ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>{t('paid')}</span>
-                            </div>
-                            <span className={`text-sm font-bold font-numbers ${isDark ? 'text-white' : 'text-slate-800'}`}>{paidCount}</span>
-                        </div>
-                        <div className={`flex items-center justify-between p-2 rounded-lg transition-colors ${isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50'}`}>
-                            <div className="flex items-center gap-2">
-                                <span className="size-3 rounded-full bg-warning shadow-[0_0_8px_rgba(245,158,11,0.6)]"></span>
-                                <span className={`text-sm ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>{t('pending')}</span>
-                            </div>
-                            <span className={`text-sm font-bold font-numbers ${isDark ? 'text-white' : 'text-slate-800'}`}>{pendingCount}</span>
-                        </div>
-                        <div className={`flex items-center justify-between p-2 rounded-lg transition-colors ${isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50'}`}>
-                            <div className="flex items-center gap-2">
-                                <span className="size-3 rounded-full bg-info shadow-[0_0_8px_rgba(59,130,246,0.6)]"></span>
-                                <span className={`text-sm ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>{t('inProgress')}</span>
-                            </div>
-                            <span className={`text-sm font-bold font-numbers ${isDark ? 'text-white' : 'text-slate-800'}`}>{inProgressCount}</span>
-                        </div>
-                        <div className={`flex items-center justify-between p-2 rounded-lg transition-colors ${isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50'}`}>
-                            <div className="flex items-center gap-2">
-                                <span className="size-3 rounded-full bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.6)]"></span>
-                                <span className={`text-sm ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>{t('waitingForPayment')}</span>
-                            </div>
-                            <span className={`text-sm font-bold font-numbers ${isDark ? 'text-white' : 'text-slate-800'}`}>{waitingForPaymentCount}</span>
-                        </div>
-                        <div className={`flex items-center justify-between p-2 rounded-lg transition-colors ${isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50'}`}>
-                            <div className="flex items-center gap-2">
-                                <span className="size-3 rounded-full bg-danger shadow-[0_0_8px_rgba(239,68,68,0.6)]"></span>
-                                <span className={`text-sm ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>{t('cancelled')}</span>
-                            </div>
-                            <span className={`text-sm font-bold font-numbers ${isDark ? 'text-white' : 'text-slate-800'}`}>{cancelledCount}</span>
-                        </div>
-                    </div>
-                </GlassPanel>
-            </div>
-
-            {/* Recent Orders Table */}
-            <div>
-                <div className="flex items-center justify-between mb-4">
-                    <h3 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-slate-800'}`}>{t('recentOrders')}</h3>
-                    <button onClick={() => navigate('/orders')} className="text-sm text-primary hover:text-primary-glow font-medium flex items-center gap-1 transition-colors">
-                        {t('view')} {t('all')}
-                        <span className="material-symbols-outlined text-sm dir-flip">arrow_right_alt</span>
-                    </button>
                 </div>
-                <div className="flex flex-col gap-3">
-                    {recentOrders.length > 0 ? recentOrders.map((order, idx) => {
-                        const assignedEmployee = getEmployeeName(order.assignedTo);
-                        return (
-                            <GlassPanel key={idx} className={`p-4 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-4 transition-all cursor-pointer group ${isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50'}`}>
-                                <div className="flex items-center gap-4 w-full sm:w-auto">
-                                    <div className={`size-10 rounded-full bg-primary/20 flex items-center justify-center text-primary`}>
-                                        <span className="material-symbols-outlined">description</span>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                    {/* Circle Chart */}
+                    <div className="relative order-2 lg:order-1">
+                        <svg viewBox="0 0 300 300" className="w-80 h-80 mx-auto">
+                            {/* Background circle */}
+                            <circle 
+                                cx="150" cy="150" r="130" 
+                                fill="none" 
+                                stroke="#374151" 
+                                strokeWidth="25"
+                                className={isDark ? 'stroke-slate-700' : 'stroke-slate-200'}
+                            />
+                            {/* Progress ring with multiple colored segments */}
+                            {/* Multi-segment donut chart */}
+                            <path d="M 150 20 A 130 130 0 0 1 195 90" fill="none" stroke="#10B981" strokeWidth="25" strokeLinecap="round" className="origin-center -rotate-90 transition-all duration-1000"/>
+                            <path d="M 195 90 A 130 130 0 0 1 240 35" fill="none" stroke="#F59E0B" strokeWidth="25" strokeLinecap="round" className="origin-center -rotate-90 -rotate-40 transition-all duration-1000"/>
+                            <path d="M 240 35 A 130 130 0 0 1 260 105" fill="none" stroke="#3B82F6" strokeWidth="25" strokeLinecap="round" className="origin-center -rotate-90 -rotate-80 transition-all duration-1000"/>
+                            <path d="M 260 105 A 130 130 0 0 1 230 170" fill="none" stroke="#A855F7" strokeWidth="25" strokeLinecap="round" className="origin-center -rotate-90 -rotate-120 transition-all duration-1000"/>
+                            <path d="M 230 170 A 130 130 0 0 1 170 230" fill="none" stroke="#EF4444" strokeWidth="25" strokeLinecap="round" className="origin-center -rotate-90 -rotate-160 transition-all duration-1000"/>
+                            <path d="M 170 230 A 130 130 0 0 1 105 260" fill="none" stroke="#6B7280" strokeWidth="25" strokeLinecap="round" className="origin-center -rotate-90 -rotate-200 transition-all duration-1000"/>
+                            <path d="M 105 260 A 130 130 0 0 1 35 240" fill="none" stroke="#6B7280" strokeWidth="25" strokeLinecap="round" className="origin-center -rotate-90 -rotate-240 transition-all duration-1000"/>
+                            <path d="M 35 240 A 130 130 0 0 1 90 195" fill="none" stroke="#6B7280" strokeWidth="25" strokeLinecap="round" className="origin-center -rotate-90 -rotate-280 transition-all duration-1000"/>
+                            <path d="M 90 195 A 130 130 0 0 1 150 20" fill="none" stroke="#6B7280" strokeWidth="25" strokeLinecap="round" className="origin-center -rotate-90 -rotate-320 transition-all duration-1000"/>
+                            
+                            {/* Center total */}
+                            <text x="150" y="155" className={`text-4xl lg:text-5xl font-black fill-white text-center font-numbers drop-shadow-2xl animate-pulse`} textAnchor="middle">
+                                {statusCounts.total}
+                            </text>
+                            <text x="150" y="195" className={`text-lg font-bold fill-slate-300 text-center`} textAnchor="middle">
+                                {t('totalOrders') || 'إجمالي الطلبات'}
+                            </text>
+                        </svg>
+                    </div>
+                    
+                    {/* Legend on left - RTL */}
+                    <div className="order-1 lg:order-2 space-y-3 text-right pr-0 lg:pr-12">
+                        <div className="flex items-center justify-end gap-3 p-3 rounded-2xl bg-gradient-to-r from-emerald-500/10 to-green-500/10 border border-emerald-500/20 shadow-lg">
+                            <div className="w-4 h-4 rounded-lg bg-emerald-500 shadow-md"></div>
+                            <div>
+                                <div className="font-bold text-lg text-white">{statusCounts.completed}</div>
+                                <div className="text-sm text-slate-300">{t('completed') || 'مكتمل'}</div>
+                            </div>
+                        </div>
+                        
+                        <div className="flex items-center justify-end gap-3 p-3 rounded-2xl bg-gradient-to-r from-emerald-500/10 to-green-500/10 border border-emerald-500/20 shadow-lg">
+                            <div className="w-4 h-4 rounded-lg bg-emerald-500 shadow-md"></div>
+                            <div>
+                                <div className="font-bold text-lg text-white">{statusCounts.paid}</div>
+                                <div className="text-sm text-slate-300">{t('paid') || 'مدفوع'}</div>
+                            </div>
+                        </div>
+                        
+                        <div className="flex items-center justify-end gap-3 p-3 rounded-2xl bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 shadow-lg">
+                            <div className="w-4 h-4 rounded-lg bg-amber-500 shadow-md"></div>
+                            <div>
+                                <div className="font-bold text-lg text-white">{statusCounts.pending}</div>
+                                <div className="text-sm text-slate-300">{t('pending') || 'قيد الانتظار'}</div>
+                            </div>
+                        </div>
+                        
+                        <div className="flex items-center justify-end gap-3 p-3 rounded-2xl bg-gradient-to-r from-blue-500/10 to-indigo-500/10 border border-blue-500/20 shadow-lg">
+                            <div className="w-4 h-4 rounded-lg bg-blue-500 shadow-md"></div>
+                            <div>
+                                <div className="font-bold text-lg text-white">{statusCounts.inProgress}</div>
+                                <div className="text-sm text-slate-300">{t('inProgress') || 'قيد التنفيذ'}</div>
+                            </div>
+                        </div>
+                        
+                        <div className="flex items-center justify-end gap-3 p-3 rounded-2xl bg-gradient-to-r from-purple-500/10 to-violet-500/10 border border-purple-500/20 shadow-lg">
+                            <div className="w-4 h-4 rounded-lg bg-purple-500 shadow-md"></div>
+                            <div>
+                                <div className="font-bold text-lg text-white">{statusCounts.waitingPayment}</div>
+                                <div className="text-sm text-slate-300">{t('waitingForPayment') || 'في انتظار الدفع'}</div>
+                            </div>
+                        </div>
+                        
+                        <div className="flex items-center justify-end gap-3 p-3 rounded-2xl bg-gradient-to-r from-red-500/10 to-rose-500/10 border border-red-500/20 shadow-lg">
+                            <div className="w-4 h-4 rounded-lg bg-red-500 shadow-md"></div>
+                            <div>
+                                <div className="font-bold text-lg text-white">{statusCounts.cancelled}</div>
+                                <div className="text-sm text-slate-300">{t('cancelled') || 'ملغى'}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </GlassPanel>
+
+            {/* Recent Orders & Revenue */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Recent Orders */}
+                <GlassPanel className="p-8">
+                    <div className="flex items-center justify-between mb-6">
+                        <h3 className="text-xl font-bold text-white">{t('recentOrders') || 'آخر الطلبات'}</h3>
+                        <button 
+                            onClick={() => navigate('/orders')} 
+                            className="flex items-center gap-2 text-primary hover:text-primary-glow font-medium transition-colors group"
+                        >
+                            {t('viewAll') || 'عرض الكل'}
+                            <span className="material-symbols-outlined text-sm transition-transform group-hover:translate-x-1">arrow_forward</span>
+                        </button>
+                    </div>
+                    <div className="space-y-4">
+                        {recentOrders.length > 0 ? recentOrders.map((order, idx) => (
+                            <div key={idx} className={`p-4 rounded-xl border transition-all cursor-pointer group ${isDark ? 'border-glass-border hover:bg-white/5' : 'border-slate-200 hover:bg-slate-50'}`}>
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-r from-primary to-primary-dark shadow-lg`}>
+                                            <span className="material-symbols-outlined text-white text-sm">receipt</span>
+                                        </div>
+                                        <div>
+                                            <h4 className={`font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>{order.customer}</h4>
+                                            <p className={`text-xs opacity-75 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{order.service}</p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <h4 className={`font-bold text-sm ${isDark ? 'text-white' : 'text-slate-800'}`}>{order.customer}</h4>
-                                        <p className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{t(order.service)}</p>
-                                        {assignedEmployee && (
-                                            <p className={`text-xs mt-1 ${isDark ? 'text-info' : 'text-info'}`}>
-                                                {t('assignedTo')}: {assignedEmployee}
-                                            </p>
-                                        )}
+                                    <div className="flex flex-col items-end gap-1">
+                                        <span className={`text-sm font-bold font-numbers text-success`}>
+                                            {order.price} <span className="text-xs opacity-75">{t('sar')}</span>
+                                        </span>
+                                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusStyles(order.status)}`}>
+                                            {t(order.status) || order.status}
+                                        </span>
                                     </div>
                                 </div>
-                                <div className="flex items-center justify-between w-full sm:w-auto gap-8 md:gap-16">
-                                    <div className="flex flex-col items-start sm:items-end">
-                                        <span className={`text-xs mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>{t('price')}</span>
-                                        <span className={`text-sm font-numbers ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>{order.amount} {t('sar')}</span>
-                                    </div>
-                                    <div className="flex flex-col items-start sm:items-end">
-                                        <span className={`text-xs mb-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>{t('status')}</span>
-                                        <span className={`text-sm font-bold font-numbers ${isDark ? 'text-white' : 'text-slate-800'}`}>{t(order.status)}</span>
-                                    </div>
-                                </div>
-                            </GlassPanel>
-                        );
-                    }) : (
-                        <div className="text-center py-4 text-slate-500">{t('noData')}</div>
-                    )}
-                </div>
+                            </div>
+                        )) : (
+                            <div className="text-center py-12">
+                                <span className="material-symbols-outlined text-5xl opacity-25 mb-4 block mx-auto">receipt_long</span>
+                                <p className={`text-lg font-medium ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                                    {t('noRecentOrders') || 'لا توجد طلبات حديثة'}
+                                </p>
+                            </div>
+                        )}
+                    </div>
+                </GlassPanel>
             </div>
 
-
-        </div >
+        </div>
     );
 };
 

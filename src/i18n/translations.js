@@ -1,7 +1,16 @@
 export const translations = {
     ar: {
         // Navigation & General
-        "dashboard": "لوحة القيادة",
+        "dashboard": "لوحة التحكم",
+        "currentBalance": "الرصيد الحالي",
+        "totalIncome": "إجمالي الإيرادات",
+        "totalExpenses": "إجمالي المصروفات",
+        "recentTransactions": "المعاملات الأخيرة",
+        "incomeActivities": "نشاط الإيرادات",
+        "quickTransaction": "إرسال سريع",
+        "sendNow": "إرسال الآن",
+        "yourCreditCard": "بطاقتك الائتمانية",
+        "thisWeek": "هذا الأسبوع",
         "orders": "قائمة الطلبات",
         "pricing": "إدارة الأسعار",
         "payments": "المدفوعات",
@@ -66,8 +75,8 @@ export const translations = {
         "onlyAdminCanAssign": "وظيفة خاصة بالمشرف",
         "confirmDelete": "هل أنت متأكد من الحذف؟",
         // New fields for orders
-        "requestId": "معرف الطلب",
-        "userId": "معرف المستخدم",
+        "requestId": "رقم الطلب",
+        "userId": "اسم المستخدم",
         "details": "التفاصيل",
         "contactNumber": "رقم التواصل",
         "fileUrls": "روابط الملفات",

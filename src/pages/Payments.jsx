@@ -46,7 +46,7 @@ const Payments = () => {
 
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
-            <h2 className={`text-2xl font-bold mb-6 ${isDark ? 'text-white' : 'text-slate-800'}`}>{t('payments')}</h2>
+
 
             {/* Stats Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -204,23 +204,6 @@ const Payments = () => {
                 </GlassPanel>
             </div>
 
-            {/* Payment Actions */}
-            <GlassPanel className="p-6 mb-8">
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                    <h3 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-slate-800'}`}>{t('paymentActions')}</h3>
-                    <div className="flex flex-wrap gap-3">
-                        <button className="px-4 py-2 bg-success text-white rounded-xl text-sm font-medium hover:bg-success-dark transition-all shadow-glow">
-                            {t('addPayment')}
-                        </button>
-                        <button className="px-4 py-2 bg-primary text-white rounded-xl text-sm font-medium hover:bg-primary-dark transition-all shadow-glow">
-                            {t('claimPayment')}
-                        </button>
-                        <button className={`px-4 py-2 rounded-xl text-sm font-medium transition-all border ${isDark ? 'bg-white/5 hover:bg-white/10 text-white border-glass-border' : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200'}`}>
-                            {t('exportReports')}
-                        </button>
-                    </div>
-                </div>
-            </GlassPanel>
 
             {/* Payments Table */}
             <GlassPanel className="p-6">

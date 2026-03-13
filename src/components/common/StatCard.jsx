@@ -1,9 +1,11 @@
 import React from 'react';
 import GlassPanel from './GlassPanel';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { useTheme } from '../../contexts/ThemeContext';
 
 const StatCard = ({ title, value, icon, trend, trendValue, color = 'primary' }) => {
     const { t } = useLanguage();
+    const { isDark } = useTheme();
 
     const colorMap = {
         primary: 'text-primary bg-primary/20',
@@ -29,8 +31,8 @@ const StatCard = ({ title, value, icon, trend, trendValue, color = 'primary' }) 
                 )}
             </div>
             <div>
-                <p className="text-slate-400 text-sm font-medium mb-1">{t(title)}</p>
-                <h3 className={`text-2xl font-bold font-numbers tracking-tight text-white group-hover:text-${color}-glow transition-colors`}>
+                <p className={`text-sm font-medium mb-1 ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>{t(title)}</p>
+                <h3 className={`text-2xl font-bold font-numbers tracking-tight group-hover:text-${color}-glow transition-colors ${isDark ? 'text-white' : 'text-slate-900'}`}>
                     {value}
                 </h3>
             </div>
