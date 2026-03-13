@@ -41,7 +41,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
             {/* Logo Area */}
             <div className={`h-20 flex items-center gap-4 px-6 border-b ${isDark ? 'border-glass-border' : 'border-slate-200/50'}`}>
                 <div className="relative size-10 rounded-xl bg-gradient-to-br from-primary to-neon-purple flex items-center justify-center shadow-glow">
-                    <span className="material-symbols-outlined text-white text-2xl">admin_panel_settings</span>
+                    <img src="/ach.svg" alt="ACH" className="h-8 w-8" />
                 </div>
                 <div className="flex flex-col">
                     <h1 className={`text-lg font-bold leading-none tracking-wide ${isDark ? 'text-white' : 'text-slate-800'}`}>{t('systemManagement')}</h1>
