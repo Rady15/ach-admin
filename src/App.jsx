@@ -1,6 +1,6 @@
 import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import Layout from './components/layout/Layout';
-import Dashboard from './pages/Dashboard';
+import FintechDashboard from './pages/FintechDashboard.jsx';
 import Orders from './pages/Orders';
 import Pricing from './pages/Pricing';
 import Payments from './pages/Payments';
@@ -35,7 +35,7 @@ function App() {
                 {/* Admin Only Routes */}
                 <Route path="dashboard" element={
                     <ProtectedRoute allowedRoles={['admin']}>
-                        <Dashboard />
+                        <FintechDashboard />
                     </ProtectedRoute>
                 } />
                 <Route path="orders" element={

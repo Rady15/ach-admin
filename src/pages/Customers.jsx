@@ -150,7 +150,7 @@ const Customers = () => {
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
             <div className="flex items-center justify-between">
-                <h2 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-slate-800'}`}>{t('customers')}</h2>
+
                 <div className="flex gap-2">
                     <button
                         onClick={() => setIsAddModalOpen(true)}

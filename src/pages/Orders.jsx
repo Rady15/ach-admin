@@ -84,7 +84,7 @@ const Orders = () => {
 
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
-            <h2 className={`text-2xl font-bold mb-6 ${isDark ? 'text-white' : 'text-slate-800'}`}>{t('ordersList')}</h2>
+
 
             {/* Stats Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -153,10 +153,9 @@ const Orders = () => {
                         >
                             <option value="all">{t('allStatuses')}</option>
                             <option value="underreview">{t('underReview')}</option>
-                            <option value="pending">{t('pending')}</option>
-                            <option value="inprogress">{t('inProgress')}</option>
                             <option value="waitingforpayment">{t('waitingForPayment')}</option>
                             <option value="paid">{t('paid')}</option>
+                            <option value="inprogress">{t('inProgress')}</option>
                             <option value="completed">{t('completed')}</option>
                             <option value="cancelled">{t('cancelled')}</option>
                         </select>
@@ -173,84 +172,66 @@ const Orders = () => {
             {/* Orders Table */}
             <GlassPanel className="p-6">
                 <div className="flex items-center justify-between mb-6">
-                    <h3 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-slate-800'}`}>{t('ordersList')}</h3>
-                    <div className="flex gap-2">
-                        <button className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${isDark ? 'bg-white/5 hover:bg-white/10 text-white border border-glass-border' : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200'}`}>
-                            {t('export')}
-                        </button>
-                        <button
-                            onClick={() => {
-                                setSelectedOrder(null);
-                                setModalMode('add');
-                                setIsModalOpen(true);
-                            }}
-                            className="px-4 py-2 bg-success text-white rounded-xl text-sm font-medium hover:bg-success-dark transition-all shadow-glow"
-                        >
-                            {t('addOrder')}
-                        </button>
-                    </div>
+
+                    
                 </div>
 
                 <div className="overflow-x-auto">
                     <table className="w-full">
                         <thead>
                             <tr className={`text-right text-sm border-b ${isDark ? 'text-slate-400 border-glass-border' : 'text-slate-500 border-slate-200'}`}>
-                                <th className="pb-3 px-4 font-medium">#</th>
-                                <th className="pb-3 px-4 font-medium">{t('requestId')}</th>
-                                <th className="pb-3 px-4 font-medium">{t('userId')}</th>
-                                <th className="pb-3 px-4 font-medium">{t('serviceType')}</th>
-                                <th className="pb-3 px-4 font-medium">{t('serviceName')}</th>
-                                <th className="pb-3 px-4 font-medium">{t('details')}</th>
-                                <th className="pb-3 px-4 font-medium">{t('contactNumber')}</th>
-                                <th className="pb-3 px-4 font-medium">{t('price')}</th>
-                                <th className="pb-3 px-4 font-medium">{t('assignedTo')}</th>
-                                <th className="pb-3 px-4 font-medium">{t('status')}</th>
-                                <th className="pb-3 px-4 font-medium">{t('createdAt')}</th>
-                                <th className="pb-3 px-4 font-medium">{t('actions')}</th>
+                            <th className="pb-3 px-2 font-medium min-w-[80px] max-w-[80px]">#</th>
+                                <th className="pb-3 px-2 font-medium min-w-[120px] max-w-[120px]">{t('userId')}</th>
+                                <th className="pb-3 px-2 font-medium min-w-[100px] max-w-[100px]">{t('serviceType')}</th>
+                                <th className="pb-3 px-2 font-medium min-w-[120px] max-w-[120px]">{t('serviceName')}</th>
+                                <th className="pb-3 px-2 font-medium min-w-[110px] max-w-[110px]">{t('contactNumber')}</th>
+                                <th className="pb-3 px-2 font-medium min-w-[90px] max-w-[90px]">{t('price')}</th>
+                                <th className="pb-3 px-2 font-medium min-w-[100px]">{t('assignedTo')}</th>
+                                <th className="pb-3 px-2 font-medium min-w-[80px]">{t('status')}</th>
+                                <th className="pb-3 px-2 font-medium min-w-[140px]">{t('actions')}</th>
                             </tr>
                         </thead>
                         <tbody className={`text-sm ${isDark ? 'text-white' : 'text-slate-700'}`}>
                             {paginatedOrders.map((row, idx) => (
                                 <tr key={idx} className={`border-b transition-colors last:border-0 ${isDark ? 'border-glass-border hover:bg-white/5' : 'border-slate-100 hover:bg-slate-50'}`}>
-                                    <td className="py-3 px-4 font-numbers">{(currentPage - 1) * itemsPerPage + idx + 1}</td>
-                                    <td className="py-3 px-4 font-numbers">{row.id}</td>
-                                    <td className="py-3 px-4">{row.customer}</td>
-                                    <td className="py-3 px-4">{t(row.service)}</td>
-                                    <td className="py-3 px-4">{row.serviceDetails?.serviceName || '---'}</td>
-                                    <td className="py-3 px-4">{row.serviceDetails?.details || '---'}</td>
-                                    <td className="py-3 px-4 font-numbers">{row.serviceDetails?.contactNumber || '---'}</td>
-                                    <td className="py-3 px-4 font-numbers">{row.price} {t('sar')}</td>
-                                    <td className="py-3 px-4">
-                                        <span className={`text-xs ${row.assignedTo ? (isDark ? 'text-info' : 'text-info') : (isDark ? 'text-slate-500' : 'text-slate-400')}`}>
+                                    <td className="py-3 px-2 text-right font-numbers">{(currentPage - 1) * itemsPerPage + idx + 1}</td>
+                                    <td className="py-3 px-2 truncate">{row.customer}</td>
+                                    <td className="py-3 px-2 truncate">{t(row.service)}</td>
+                                    <td className="py-3 px-2 truncate">{row.serviceDetails?.serviceName || '---'}</td>
+                                    <td className="py-3 px-2 font-numbers truncate">{row.serviceDetails?.contactNumber || '---'}</td>
+                                    <td className="py-3 px-2 font-numbers truncate">{row.price} {t('sar')}</td>
+                                    <td className="py-3 px-2">
+                                        <span className={`text-xs truncate block ${row.assignedTo ? (isDark ? 'text-info' : 'text-info') : (isDark ? 'text-slate-500' : 'text-slate-400')}`}>
                                             {getEmployeeName(row.assignedTo)}
                                         </span>
                                     </td>
-                                    <td className="py-3 px-4">
-                                        <span className={`px-3 py-1 rounded-full bg-${row.statusColor}/10 border border-${row.statusColor}/20 text-${row.statusColor} text-xs`}>
+                                    <td className="py-3 px-2">
+                                        <span className={`px-2 py-1 rounded-full bg-${row.statusColor}/10 border border-${row.statusColor}/20 text-${row.statusColor} text-xs block`}>
                                             {t(row.status)}
                                         </span>
                                     </td>
-                                    <td className="py-3 px-4 font-numbers">{row.date}</td>
-                                    <td className="py-3 px-4">
-                                        <div className="flex gap-2">
+                                    <td className="py-3 px-2">
+                                        <div className="flex gap-1">
                                             <button
                                                 onClick={() => handleView(row)}
-                                                className="text-primary hover:text-primary-glow text-sm font-medium transition-colors"
+                                                className="text-primary hover:text-primary-glow text-xs font-medium transition-colors p-1"
+                                                title={t('view')}
                                             >
-                                                {t('view')}
+                                                <span className="material-symbols-outlined text-sm">visibility</span>
                                             </button>
                                             <button
                                                 onClick={() => handleEdit(row)}
-                                                className="text-info hover:text-info-glow text-sm font-medium transition-colors"
+                                                className="text-info hover:text-info-glow text-xs font-medium transition-colors p-1"
+                                                title={t('update')}
                                             >
-                                                {t('update')}
+                                                <span className="material-symbols-outlined text-sm">edit</span>
                                             </button>
                                             <button
                                                 onClick={() => handleDelete(row.id)}
-                                                className="text-danger hover:text-danger-glow text-sm font-medium transition-colors"
+                                                className="text-danger hover:text-danger-glow text-xs font-medium transition-colors p-1"
                                                 title={t('delete')}
                                             >
-                                                <span className="material-symbols-outlined text-[20px]">delete</span>
+                                                <span className="material-symbols-outlined text-sm">delete</span>
                                             </button>
                                         </div>
                                     </td>

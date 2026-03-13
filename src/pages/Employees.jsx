@@ -158,7 +158,7 @@ const Employees = () => {
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
             <div className="flex items-center justify-between">
-                <h2 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-slate-800'}`}>{t('employees')}</h2>
+
                 <button
                     onClick={() => setIsAddModalOpen(true)}
                     className="px-4 py-2 bg-primary text-white rounded-xl text-sm font-medium hover:bg-primary-dark transition-all shadow-glow"

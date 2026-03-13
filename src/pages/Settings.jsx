@@ -48,8 +48,8 @@ const Settings = () => {
     const tabs = [
         { id: 'account', label: t('account'), icon: 'person' },
         { id: 'security', label: t('security'), icon: 'security' },
-        { id: 'notifications', label: t('notifications'), icon: 'notifications' },
-        { id: 'privacy', label: t('privacy'), icon: 'privacy_tip' },
+        // { id: 'notifications', label: t('notifications'), icon: 'notifications' },
+        // { id: 'privacy', label: t('privacy'), icon: 'privacy_tip' },
     ];
 
     // Handle account form save
@@ -261,12 +261,12 @@ const Settings = () => {
                                 <div className={`p-4 rounded-xl border ${isDark ? 'bg-white/5 border-glass-border' : 'bg-slate-50 border-slate-200'}`}>
                                     <h4 className={`font-medium mb-2 text-sm ${isDark ? 'text-white' : 'text-slate-800'}`}>{t('systemManagement')}</h4>
                                     <div className="space-y-2">
-                                        <button
+                                        {/* <button
                                             onClick={() => alert(t('loading'))}
                                             className={`w-full text-right text-xs py-1.5 transition-colors ${isDark ? 'text-slate-300 hover:text-white' : 'text-slate-600 hover:text-slate-800'}`}
                                         >
                                             {t('systemUpdate')}
-                                        </button>
+                                        </button> */}
                                         <button
                                             onClick={() => alert(t('success'))}
                                             className={`w-full text-right text-xs py-1.5 transition-colors ${isDark ? 'text-slate-300 hover:text-white' : 'text-slate-600 hover:text-slate-800'}`}
@@ -349,7 +349,7 @@ const Settings = () => {
                             </div>
 
                             {/* Security Options */}
-                            <div className={`p-4 rounded-xl border ${isDark ? 'bg-white/5 border-glass-border' : 'bg-slate-50 border-slate-200'}`}>
+                            {/* <div className={`p-4 rounded-xl border ${isDark ? 'bg-white/5 border-glass-border' : 'bg-slate-50 border-slate-200'}`}>
                                 <h4 className={`font-medium mb-4 ${isDark ? 'text-white' : 'text-slate-800'}`}>{t('security')}</h4>
                                 <div className="space-y-4">
                                     {[
@@ -396,13 +396,13 @@ const Settings = () => {
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                            </div> */}
                         </div>
                     </GlassPanel>
                 )}
 
                 {/* NOTIFICATIONS TAB */}
-                {activeTab === 'notifications' && (
+                {/* {activeTab === 'notifications' && (
                     <GlassPanel className="p-6">
                         <h3 className={`text-lg font-bold mb-6 ${isDark ? 'text-white' : 'text-slate-800'}`}>{t('notificationSettings')}</h3>
                         <div className="space-y-4 max-w-2xl">
@@ -439,10 +439,10 @@ const Settings = () => {
                             </div>
                         </div>
                     </GlassPanel>
-                )}
+                )} */}
 
                 {/* PRIVACY TAB */}
-                {activeTab === 'privacy' && (
+                {/* {activeTab === 'privacy' && (
                     <GlassPanel className="p-6">
                         <h3 className={`text-lg font-bold mb-6 ${isDark ? 'text-white' : 'text-slate-800'}`}>{t('privacy')}</h3>
                         <div className={`space-y-6 max-w-3xl text-sm leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
@@ -477,7 +477,7 @@ const Settings = () => {
                             </div>
                         </div>
                     </GlassPanel>
-                )}
+                )} */}
 
             </div>
         </div>
